@@ -25,6 +25,7 @@ public class UtenteDAO {
     // --- Query Dirette ---
     private static final String INSERT_UTENTE_QUERY = "INSERT INTO Utente (Username, Password_Hash, Nome_Utente, Cognome_Utente, Ruolo) VALUES (?, ?, ?, ?, ?)";
     private static final String SELECT_DIPENDENTI_QUERY = "SELECT ID_Utente, Nome_Utente, Cognome_Utente FROM Utente WHERE Ruolo = 'Dipendente'";
+    private static final String SELECT_CAPIPROGETTO_QUERY = "SELECT ID_Utente, Nome_Utente, Cognome_Utente FROM Utente WHERE Ruolo = 'CapoProgetto'";
 
     /**
      * Inserisce un nuovo utente nel database usando un comando INSERT diretto,
@@ -141,5 +142,27 @@ public class UtenteDAO {
             logger.log(Level.SEVERE, "Errore durante il recupero della lista dei dipendenti", e);
         }
         return dipendenti;
+    }
+
+    /**
+     * Recupera dal database una lista di tutti gli utenti con il ruolo 'CapoProgetto'.
+     * @return Una lista di oggetti Utente (ID, Nome, Cognome).
+     */
+    public List<Utente> getTuttiCapiProgetto() {
+        List<Utente> capiProgetto = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_CAPIPROGETTO_QUERY);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Utente utente = new Utente();
+                utente.setIdUtente(rs.getInt("ID_Utente"));
+                utente.setNome(rs.getString("Nome_Utente"));
+                utente.setCognome(rs.getString("Cognome_Utente"));
+                capiProgetto.add(utente);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero della lista dei Capi Progetto", e);
+        }
+        return capiProgetto;
     }
 }

@@ -35,6 +35,7 @@ public class LoginView implements View {
 
                 if (utenteAutenticato != null) {
                     ViewUtils.println(ColorUtils.ANSI_GREEN + "\nLogin effettuato con successo!" + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue("Premi Invio per continuare...");
                     ViewUtils.clearScreen();
                     return Navigazione.vaiA(getHomeViewPerRuolo(utenteAutenticato));
                 } else {
