@@ -5,17 +5,26 @@ import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.DatabaseConnector;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DAO per l'entità Utente. Gestisce l'accesso ai dati degli utenti nel database.
  */
 public class UtenteDAO {
+    // Istanza del logger per questa classe
+    private static final Logger logger = Logger.getLogger(UtenteDAO.class.getName());
 
-    // Costante per la Stored Procedure che recupera l'utente.
+    // --- Stored Procedures ---
     private static final String SP_GET_UTENTE_BY_USERNAME = "{CALL sp_LG1_OttieniUtenteDaUsername(?)}";
+    private static final String SP_ASSEGNA_RUOLO_CAPOPROGETTO = "{CALL sp_AM1_AssegnaRuoloCapoProgetto(?)}";
+    private static final String SP_RIMUOVI_RUOLO_CAPOPROGETTO = "{CALL sp_AM2_RimuoviRuoloCapoProgetto(?)}";
 
-    // Definiamo la query SQL come una costante privata per pulizia e sicurezza.
+    // --- Query Dirette ---
     private static final String INSERT_UTENTE_QUERY = "INSERT INTO Utente (Username, Password_Hash, Nome_Utente, Cognome_Utente, Ruolo) VALUES (?, ?, ?, ?, ?)";
+    private static final String SELECT_DIPENDENTI_QUERY = "SELECT ID_Utente, Nome_Utente, Cognome_Utente FROM Utente WHERE Ruolo = 'Dipendente'";
 
     /**
      * Inserisce un nuovo utente nel database usando un comando INSERT diretto,
@@ -26,9 +35,8 @@ public class UtenteDAO {
      * @throws SQLException Se l'username esiste già (violazione del vincolo UNIQUE) o per altri errori DB.
      */
     public void creaNuovoUtente(Utente nuovoUtente) throws SQLException {
-        Connection conn = DatabaseConnector.getConnection();
 
-        // Usiamo un PreparedStatement per eseguire query SQL dirette in modo sicuro.
+        Connection conn = DatabaseConnector.getConnection();
         try (PreparedStatement stmt = conn.prepareStatement(INSERT_UTENTE_QUERY)) {
 
             // Impostiamo i parametri in ordine, corrispondenti ai '?' nella query.
@@ -40,6 +48,9 @@ public class UtenteDAO {
 
             // Eseguiamo l'operazione di inserimento.
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore SQL durante la creazione dell'utente: " + nuovoUtente.getUsername(), e);
+            throw e;
         }
     }
 
@@ -68,21 +79,67 @@ public class UtenteDAO {
                     utente = new Utente();
                     utente.setIdUtente(rs.getInt("ID_Utente"));
                     utente.setUsername(rs.getString("Username"));
-                    utente.setPassword(rs.getString("Password_Hash")); // Fondamentale per la verifica!
+                    utente.setPassword(rs.getString("Password_Hash"));
                     utente.setNome(rs.getString("Nome_Utente"));
                     utente.setCognome(rs.getString("Cognome_Utente"));
                     utente.setRuolo(Ruolo.fromString(rs.getString("Ruolo")));
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Errore durante l'esecuzione della Stored Procedure sp_LG1_OttieniUtenteDaUsername:");
-            e.printStackTrace();
-            // In futuro, qui lanceremo un'eccezione custom.
+            logger.log(Level.SEVERE, "Errore durante l'esecuzione della Stored Procedure sp_LG1_OttieniUtenteDaUsername per l'utente: " + username, e);
         }
 
         return utente; // Restituisce l'utente trovato o null.
     }
 
-    // Qui in futuro aggiungeremo gli altri metodi:
-    // es. public void creaNuovoUtente(...) { ... }
+    /**
+     * Modifica il ruolo di un utente esistente in 'CapoProgetto'. Chiama la SP AM1.
+     * @param idUtente L'ID dell'utente da promuovere.
+     * @throws SQLException in caso di errore del database.
+     */
+    public void assegnaRuoloCapoProgetto(int idUtente) throws SQLException {
+        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_ASSEGNA_RUOLO_CAPOPROGETTO)) {
+            stmt.setInt(1, idUtente);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante l'esecuzione di sp_AM1_AssegnaRuoloCapoProgetto per l'ID utente: " + idUtente, e);
+            throw e; // Rilancia l'eccezione
+        }
+    }
+
+    /**
+     * Modifica il ruolo di un utente 'CapoProgetto' in 'Dipendente'. Chiama la SP AM2.
+     * @param idUtente L'ID dell'utente da "degradare".
+     * @throws SQLException in caso di errore del database.
+     */
+    public void rimuoviRuoloCapoProgetto(int idUtente) throws SQLException {
+        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_RIMUOVI_RUOLO_CAPOPROGETTO)) {
+            stmt.setInt(1, idUtente);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante l'esecuzione di sp_AM2_RimuoviRuoloCapoProgetto per l'ID utente: " + idUtente, e);
+            throw e;
+        }
+    }
+
+    /**
+     * Recupera una lista di tutti gli utenti con il ruolo 'Dipendente'.
+     * @return Una lista di oggetti Utente (ID, Nome, Cognome).
+     */
+    public List<Utente> getTuttiDipendenti() {
+        List<Utente> dipendenti = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_DIPENDENTI_QUERY);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Utente utente = new Utente();
+                utente.setIdUtente(rs.getInt("ID_Utente"));
+                utente.setNome(rs.getString("Nome_Utente"));
+                utente.setCognome(rs.getString("Cognome_Utente"));
+                dipendenti.add(utente);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero della lista dei dipendenti", e);
+        }
+        return dipendenti;
+    }
 }

@@ -13,7 +13,8 @@ public class Navigazione {
     public enum Azione {
         VAI_A,      // Naviga verso una nuova vista specificata.
         INDIETRO,   // Torna alla vista precedente nello stack.
-        LOGOUT      // Termina la sessione utente e svuota lo stack di navigazione.
+        LOGOUT,     // Termina la sessione utente e torna alla WelcomeView.
+        EXIT        // Termina l'intera applicazione.
     }
 
     public final Azione azione;
@@ -52,5 +53,13 @@ public class Navigazione {
      */
     public static Navigazione logout() {
         return new Navigazione(Azione.LOGOUT, null);
+    }
+
+    /**
+     * Factory method per creare un'istruzione per uscire dall'applicazione.
+     * @return Un oggetto Navigazione configurato per l'azione EXIT.
+     */
+    public static Navigazione exit() {
+        return new Navigazione(Azione.EXIT, null);
     }
 }

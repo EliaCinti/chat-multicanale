@@ -1,45 +1,61 @@
 package com.chatmulticanale.view;
 
-import com.chatmulticanale.controller.SignUpController; // <-- CAMBIA L'IMPORT
+import com.chatmulticanale.controller.SignUpController;
+import com.chatmulticanale.exception.CommandException; // <-- NUOVO IMPORT
+import com.chatmulticanale.utils.ColorUtils;
 import com.chatmulticanale.utils.InputUtils;
 import com.chatmulticanale.utils.ViewUtils;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 
+/**
+ * Vista per la registrazione di un nuovo utente.
+ * Ora gestisce i comandi di navigazione tramite CommandException.
+ */
 public class SignUpView implements View {
     private final SignUpController signUpController;
 
-    // Il costruttore ora accetta un SignUpController
     public SignUpView(SignUpController controller) {
         this.signUpController = controller;
     }
 
     @Override
     public Navigazione show() {
+        ViewUtils.clearScreen();
+        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- REGISTRAZIONE NUOVO UTENTE ---" + ColorUtils.ANSI_RESET);
+        ViewUtils.println("Digita '/b' o '/back' per annullare e tornare indietro.");
         ViewUtils.printSeparator();
-        ViewUtils.println("--- REGISTRAZIONE NUOVO UTENTE ---");
 
-        // Validazione per l'username: non deve contenere spazi
-        String username = InputUtils.readValidatedString(
-                "Scegli uno username: ",
-                u -> !u.contains(" "), // Regola: restituisce true se l'username NON contiene spazi
-                "Errore: Lo username non può contenere spazi."
-        );
+        try {
+            String username = InputUtils.askForInput(
+                    "Scegli uno username: ",
+                    u -> !u.contains(" ") && !u.startsWith("/"),
+                    "ERRORE: Lo username non è valido (no spazi, no '/')."
+            );
 
-        // Validazione per la password: deve essere lunga almeno 8 caratteri
-        String password = InputUtils.readValidatedString(
-                "Scegli una password (almeno 8 caratteri): ",
-                p -> p.length() >= 8, // Regola: restituisce true se la lunghezza è >= 8
-                "Errore: La password deve essere di almeno 8 caratteri."
-        );
+            String password = InputUtils.askForInput(
+                    "Scegli una password (almeno 8 caratteri): ",
+                    p -> p.length() >= 8,
+                    "ERRORE: La password deve essere di almeno 8 caratteri."
+            );
 
-        String nome = InputUtils.readString("Il tuo nome: ");
-        String cognome = InputUtils.readString("Il tuo cognome: ");
+            String nome = InputUtils.askForInput("Il tuo nome: ");
+            String cognome = InputUtils.askForInput("Il tuo cognome: ");
 
-        // Chiama il metodo del nuovo controller
-        signUpController.registraNuovoUtente(username, password, nome, cognome);
+            // Se siamo arrivati qui, tutti i dati sono stati raccolti con successo.
+            boolean registrazioneRiuscita = signUpController.registraNuovoUtente(username, password, nome, cognome);
+            if (registrazioneRiuscita) {
+                ViewUtils.println(ColorUtils.ANSI_GREEN + "\nRegistrazione completata con successo!" + ColorUtils.ANSI_RESET);
+            } else {
+                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Username non disponibile." + ColorUtils.ANSI_RESET);
+            }
+            InputUtils.pressEnterToContinue("\nPremi Invio per tornare alla schermata precedente...");
+            return Navigazione.indietro();
 
-        InputUtils.pressEnterToContinue("\nPremi Invio per tornare alla schermata precedente...");
-        return Navigazione.indietro();
+        } catch (CommandException e) {
+            // L'utente ha inserito un comando. Interrompiamo tutto e restituiamo
+            // l'istruzione di navigazione contenuta nell'eccezione.
+            return e.getNavigazione();
+        }
     }
 }

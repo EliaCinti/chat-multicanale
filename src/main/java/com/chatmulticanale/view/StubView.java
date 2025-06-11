@@ -34,7 +34,7 @@ public class StubView implements View {
         ViewUtils.println(this.message); // Mostra il messaggio personalizzato
         ViewUtils.printSeparator();
 
-        InputUtils.readString("Premi Invio per tornare indietro...");
+        InputUtils.pressEnterToContinue("Premi Invio per tornare indietro...");
 
         // Dice al sistema di navigazione di tornare alla schermata precedente.
         return Navigazione.indietro();

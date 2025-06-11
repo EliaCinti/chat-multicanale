@@ -8,9 +8,11 @@ import com.chatmulticanale.utils.ViewUtils;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 
+/**
+ * La vista di benvenuto. È speciale: non è una vista "navigabile" ma funge
+ * da router iniziale per l'intera applicazione.
+ */
 public class WelcomeView implements View {
-    // La WelcomeView ora ha bisogno di entrambi i controller per poterli
-    // passare alle viste figlie.
     private final LoginController loginController;
     private final SignUpController signUpController;
 
@@ -19,10 +21,15 @@ public class WelcomeView implements View {
         this.signUpController = signUpCtrl;
     }
 
+    /**
+     * Mostra il menu di benvenuto e restituisce la prima vista della sessione
+     * che l'utente ha scelto di avviare.
+     * @return La prossima View da mostrare, o null se l'utente sceglie di uscire.
+     */
     @Override
     public Navigazione show() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + ColorUtils.ANSI_GREEN + "BENVENUTO in Chat-Multicanale!" + ColorUtils.ANSI_RESET);
+        ViewUtils.println(ColorUtils.ANSI_BLUE + "BENVENUTO in Chat-Multicanale!" + ColorUtils.ANSI_RESET);
 
         while (true) {
             ViewUtils.printSeparator();
@@ -39,7 +46,7 @@ public class WelcomeView implements View {
                     // Passa il SignUpController alla SignUpView
                     return Navigazione.vaiA(new SignUpView(this.signUpController));
                 case 0:
-                    return Navigazione.logout();
+                    return Navigazione.exit();
                 default:
                     ViewUtils.println("Scelta non valida.");
             }

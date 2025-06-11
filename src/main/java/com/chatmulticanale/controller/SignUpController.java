@@ -22,7 +22,9 @@ public class SignUpController {
     public boolean registraNuovoUtente(String username, String password, String nome, String cognome) {
         // 1. Hash della password prima di salvarla
         String passwordHash = PasswordUtils.hashPassword(password);
-
+        if (username.equals("0")){
+            return false;
+        }
         // 2. Creazione dell'oggetto Utente
         Utente nuovoUtente = new Utente();
         nuovoUtente.setUsername(username);
@@ -34,11 +36,9 @@ public class SignUpController {
         // 3. Salvataggio nel database tramite il DAO
         try {
             utenteDAO.creaNuovoUtente(nuovoUtente);
-            ViewUtils.println("Registrazione completata con successo! Ora puoi effettuare il login.");
             return true;
         } catch (SQLException e) {
             // L'errore più comune qui è la violazione del vincolo UNIQUE sull'username.
-            ViewUtils.println("ERRORE: Username già esistente. Scegline un altro.");
             return false;
         }
     }

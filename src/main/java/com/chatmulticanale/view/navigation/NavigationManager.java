@@ -1,5 +1,7 @@
 package com.chatmulticanale.view.navigation;
 
+import com.chatmulticanale.utils.SessionManager;
+
 import java.util.Stack;
 
 /**
@@ -40,7 +42,13 @@ public class NavigationManager {
                     }
                     break;
                 case LOGOUT:
-                    // Svuota completamente lo stack per uscire dal ciclo.
+                    // Rimuovi tutte le viste dallo stack FINO A CHE non rimane solo la prima (la WelcomeView).
+                    while (history.size() > 1) {
+                        history.pop();
+                    }
+                    break;
+                case EXIT:
+                    // Svuota completamente lo stack. Questo farà terminare il loop while.
                     history.clear();
                     break;
             }
