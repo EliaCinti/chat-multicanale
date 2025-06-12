@@ -2,6 +2,7 @@ package com.chatmulticanale.controller;
 
 import com.chatmulticanale.dao.ProgettoDAO;
 import com.chatmulticanale.dao.UtenteDAO;
+import com.chatmulticanale.dto.ProgettoResponsabileDTO;
 import com.chatmulticanale.model.Progetto;
 import com.chatmulticanale.model.Utente;
 
@@ -111,6 +112,16 @@ public class AmministrazioneController {
     public boolean assegnaProgetto(int idProgetto, int idCapoProgetto) {
         // Riutilizziamo il metodo "riassegnaProgetto" perché l'azione finale sul DB è la stessa!
         return riassegnaProgetto(idProgetto, idCapoProgetto);
+    }
+
+    // --- METODI PER AM4 (RIASSEGNA RESPONSABILITA PROGETTO)---
+    /**
+     * Recupera la lista di progetti assegnati come DTO per la visualizzazione.
+     * Ogni DTO contiene i dati aggregati del progetto e del suo responsabile.
+     * @return Una lista di {@link ProgettoResponsabileDTO}.
+     */
+    public List<ProgettoResponsabileDTO> getListaProgettiConResponsabile() {
+        return progettoDAO.getProgettiConResponsabile();
     }
 
     // --- METODI PER AGGIUNGERE UN PROGETTO ---

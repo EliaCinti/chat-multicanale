@@ -1,6 +1,7 @@
 package com.chatmulticanale.view;
 
 import com.chatmulticanale.controller.AmministrazioneController;
+import com.chatmulticanale.dto.ProgettoResponsabileDTO;
 import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.model.Progetto; // <-- NUOVO IMPORT
 import com.chatmulticanale.model.Utente;
@@ -44,14 +45,13 @@ public class AmministrazioneView implements View {
                     handlePromuoviUtente();
                     break;
                 case 2:
-                    // Attiviamo la nuova funzionalità complessa
                     handleDegradaCapoProgetto();
                     break;
                 case 3:
                     handleAssegnaResponsabilita();
                     break;
                 case 4:
-                    new StubView("Funzionalità non ancora implementata.").show();
+                    handleRiassegnaProgetto();
                     break;
                 case 5:
                     handleAggiungiProgetto();
@@ -264,5 +264,113 @@ public class AmministrazioneView implements View {
         }
 
         InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+    }
+
+    /**
+     * Gestisce il flusso guidato per riassegnare un progetto da un Capo Progetto a un altro (AM4).
+     * Recupera i dati necessari, li mostra all'utente e valida l'input prima di eseguire l'azione.
+     */
+    private void handleRiassegnaProgetto() {
+        ViewUtils.clearScreen();
+        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- RIASSEGNA RESPONSABILITÀ PROGETTO (AM4) ---" + ColorUtils.ANSI_RESET);
+        ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
+        ViewUtils.printSeparator();
+
+        // 1. Recupera i dati necessari dal controller
+        List<ProgettoResponsabileDTO> progettiAssegnati = adminController.getListaProgettiConResponsabile();
+        if (progettiAssegnati.isEmpty()) {
+            ViewUtils.println("Nessun progetto attualmente assegnato da poter riassegnare.");
+            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            return;
+        }
+
+        List<Utente> capiProgetto = adminController.getListaCapiProgetto();
+        if (capiProgetto.isEmpty()) {
+            ViewUtils.println("ERRORE: Non ci sono Capi Progetto disponibili per la riassegnazione.");
+            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            return;
+        }
+
+        try {
+            // 2. Stampa la lista di progetti usando i dati del DTO
+            ViewUtils.println("Lista dei Progetti attualmente assegnati:");
+            progettiAssegnati.forEach(dto -> {
+                String riga = String.format("ID: %-5d | Nome: %-25s | Responsabile: %s %s",
+                        dto.getIdProgetto(), dto.getNomeProgetto(), dto.getNomeResponsabile(), dto.getCognomeResponsabile());
+                ViewUtils.println(riga);
+            });
+            ViewUtils.printSeparator();
+
+            // 3. Chiede e valida l'ID del progetto
+            int idProgetto = chiediIdValido("Inserisci l'ID del progetto da riassegnare: ", progettiAssegnati);
+
+
+            // 4. Stampa la lista dei Capi Progetto disponibili
+            ViewUtils.println("\nLista dei Capi Progetto disponibili:");
+            capiProgetto.forEach(cp -> ViewUtils.println(String.format("ID: %-5d | Nome: %s %s", cp.getIdUtente(), cp.getNome(), cp.getCognome())));
+            ViewUtils.printSeparator();
+
+            // 5. Chiede e valida l'ID del nuovo responsabile
+            int idNuovoCapo = chiediIdValido("Inserisci l'ID del NUOVO Capo Progetto responsabile: ", capiProgetto);
+
+            // 6. Esegue l'azione solo dopo che tutti gli input sono stati validati
+            if (adminController.riassegnaProgetto(idProgetto, idNuovoCapo)) {
+                ViewUtils.println(ColorUtils.ANSI_GREEN + "\nProgetto riassegnato con successo!" + ColorUtils.ANSI_RESET);
+            } else {
+                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile riassegnare il progetto. Controllare i log." + ColorUtils.ANSI_RESET);
+            }
+
+        } catch (CommandException e) {
+            ViewUtils.println("\nOperazione annullata.");
+        }
+
+        InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+    }
+
+    /**
+     * Metodo helper per chiedere all'utente di selezionare un ID da una lista.
+     * È type-safe e non genera warning di "unchecked cast".
+     *
+     * @param prompt Il messaggio da mostrare.
+     * @param listaPerControllo La lista di oggetti su cui controllare l'esistenza dell'ID.
+     * @return L'ID valido inserito dall'utente.
+     * @throws CommandException se l'utente inserisce un comando di navigazione.
+     */
+    private int chiediIdValido(String prompt, List<?> listaPerControllo) throws CommandException {
+        if (listaPerControllo == null || listaPerControllo.isEmpty()) {
+            throw new IllegalStateException("La lista per la validazione non può essere vuota.");
+        }
+
+        while (true) {
+            String idStr = InputUtils.askForInput(prompt);
+            try {
+                final int id = Integer.parseInt(idStr); // Dichiaro 'id' come final per usarlo nella lambda
+
+                // Usiamo un loop for-each sicuro invece dello stream con cast
+                boolean idTrovato = false;
+                for (Object oggetto : listaPerControllo) {
+                    if (oggetto instanceof Utente && ((Utente) oggetto).getIdUtente() == id) {
+                        idTrovato = true;
+                        break; // Trovato, esci dal loop
+                    }
+                    if (oggetto instanceof ProgettoResponsabileDTO && ((ProgettoResponsabileDTO) oggetto).getIdProgetto() == id) {
+                        idTrovato = true;
+                        break; // Trovato, esci dal loop
+                    }
+                    if (oggetto instanceof Progetto && ((Progetto) oggetto).getIdProgetto() == id) {
+                        idTrovato = true;
+                        break; // Trovato, esci dal loop
+                    }
+                }
+
+                if (idTrovato) {
+                    return id; // L'ID è valido, restituiscilo
+                } else {
+                    ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: L'ID inserito non è presente nella lista. Riprova." + ColorUtils.ANSI_RESET);
+                }
+            } catch (NumberFormatException e) {
+                ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Inserisci un ID numerico valido." + ColorUtils.ANSI_RESET);
+            }
+        }
     }
 }

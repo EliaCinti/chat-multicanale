@@ -1,6 +1,8 @@
 package com.chatmulticanale.dao;
 
+import com.chatmulticanale.dto.ProgettoResponsabileDTO;
 import com.chatmulticanale.model.Progetto;
+import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.DatabaseConnector;
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,6 +20,9 @@ public class ProgettoDAO {
     private static final String SELECT_PROGETTI_RESPONSABILE_QUERY = "SELECT ID_Progetto, Nome_Progetto FROM Progetto WHERE Utente_Responsabile = ?";
     private static final String INSERT_PROGETTO_QUERY = "INSERT INTO Progetto (Nome_Progetto, Descrizione_Progetto) VALUES (?, ?)";
     private static final String SELECT_PROGETTI_NON_ASSEGNATI_QUERY = "SELECT ID_Progetto, Nome_Progetto FROM Progetto WHERE Utente_Responsabile IS NULL";
+    private static final String SELECT_PROGETTI_E_RESPONSABILI_QUERY =
+            "SELECT p.ID_Progetto, p.Nome_Progetto, u.Nome_Utente, u.Cognome_Utente " +
+                    "FROM Progetto p JOIN Utente u ON p.Utente_Responsabile = u.ID_Utente";
 
     /**
      * Trova tutti i progetti di cui un dato utente è responsabile.
@@ -100,5 +105,30 @@ public class ProgettoDAO {
             logger.log(Level.SEVERE, "Errore durante il recupero dei progetti non assegnati", e);
         }
         return progetti;
+    }
+
+    /**
+     * Recupera una lista di DTO contenenti i progetti assegnati e i dettagli dei loro responsabili.
+     * Esegue una sola query efficiente per ottenere tutti i dati necessari.
+     * @return Una lista di ProgettoResponsabileDTO.
+     */
+    public List<ProgettoResponsabileDTO> getProgettiConResponsabile() {
+        List<ProgettoResponsabileDTO> risultati = new ArrayList<>();
+
+        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_PROGETTI_E_RESPONSABILI_QUERY);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                ProgettoResponsabileDTO dto = new ProgettoResponsabileDTO();
+                dto.setIdProgetto(rs.getInt("ID_Progetto"));
+                dto.setNomeProgetto(rs.getString("Nome_Progetto"));
+                dto.setNomeResponsabile(rs.getString("Nome_Utente"));
+                dto.setCognomeResponsabile(rs.getString("Cognome_Utente"));
+                risultati.add(dto);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero dei progetti con responsabile", e);
+        }
+        return risultati;
     }
 }
