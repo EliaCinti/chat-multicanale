@@ -98,7 +98,6 @@ Per eseguire il progetto in locale, segui questi passaggi:
 ---
 
 ## 📂 Struttura del Progetto
-## 📂 Struttura del Progetto
 
 ```plaintext
 .
