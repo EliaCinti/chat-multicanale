@@ -98,26 +98,29 @@ Per eseguire il progetto in locale, segui questi passaggi:
 ---
 
 ## 📂 Struttura del Progetto
+## 📂 Struttura del Progetto
+
+```plaintext
 .
 └── src/
-└── main/
-├── java/
-│ └── com/
-│ └── chatmulticanale/
-│ ├── Main.java # Entry Point dell'applicazione
-│ ├── controller/ # Contiene la logica di business
-│ ├── dao/ # Data Access Objects
-│ ├── exception/ # Eccezioni custom (es. CommandException)
-│ ├── model/ # POJO che rappresentano le entità
-│ ├── utils/ # Classi di utilità (DB, Input, Password...)
-│ └── view/ # Classi per l'interfaccia utente (CLI)
-│ └── navigation/ # Componenti per il sistema di navigazione
-└── resources/
-  └── config.properties # File di configurazione del database
+    └── main/
+        ├── java/
+        │   └── com/
+        │       └── chatmulticanale/
+        │           ├── Main.java               # Entry Point dell'applicazione
+        │           ├── controller/             # Contiene la logica di business
+        │           ├── dao/                    # Data Access Objects
+        │           ├── exception/              # Eccezioni custom (es. CommandException)
+        │           ├── model/                  # POJO che rappresentano le entità
+        │           ├── utils/                  # Classi di utilità (DB, Input, Password...)
+        │           └── view/                   # Classi per l'interfaccia utente (CLI)
+        │               └── navigation/         # Componenti per il sistema di navigazione
+        └── resources/
+            └── config.properties               # File di configurazione del database
 
 
 ---
 
 ## 👤 Autore
 
-**[Il Tuo Nome e Cognome]**
+**[Elia Cinti]**
