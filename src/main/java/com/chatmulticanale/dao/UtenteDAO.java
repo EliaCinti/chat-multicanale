@@ -26,6 +26,10 @@ public class UtenteDAO {
     private static final String INSERT_UTENTE_QUERY = "INSERT INTO Utente (Username, Password_Hash, Nome_Utente, Cognome_Utente, Ruolo) VALUES (?, ?, ?, ?, ?)";
     private static final String SELECT_DIPENDENTI_QUERY = "SELECT ID_Utente, Nome_Utente, Cognome_Utente FROM Utente WHERE Ruolo = 'Dipendente'";
     private static final String SELECT_CAPIPROGETTO_QUERY = "SELECT ID_Utente, Nome_Utente, Cognome_Utente FROM Utente WHERE Ruolo = 'CapoProgetto'";
+    private static final String SELECT_DIPENDENTI_FUORI_DA_CANALE =
+            "SELECT ID_Utente, Nome_Utente, Cognome_Utente " +
+                    "FROM Utente " +
+                    "WHERE Ruolo = 'Dipendente' AND ID_Utente NOT IN (SELECT ID_Utente FROM PartecipaCanale WHERE ID_Canale = ?)";
 
     /**
      * Inserisce un nuovo utente nel database usando un comando INSERT diretto,
@@ -164,5 +168,31 @@ public class UtenteDAO {
             logger.log(Level.SEVERE, "Errore durante il recupero della lista dei Capi Progetto", e);
         }
         return capiProgetto;
+    }
+
+    /**
+     * Recupera una lista di tutti gli utenti con ruolo 'Dipendente' che non sono
+     * ancora membri di un canale specifico.
+     *
+     * @param idCanale L'ID del canale da cui escludere i membri.
+     * @return Una lista di oggetti Utente che possono essere aggiunti al canale.
+     */
+    public List<Utente> getDipendentiNonInCanale(int idCanale) {
+        List<Utente> dipendenti = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_DIPENDENTI_FUORI_DA_CANALE)) {
+            stmt.setInt(1, idCanale);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Utente utente = new Utente();
+                    utente.setIdUtente(rs.getInt("ID_Utente"));
+                    utente.setNome(rs.getString("Nome_Utente"));
+                    utente.setCognome(rs.getString("Cognome_Utente"));
+                    dipendenti.add(utente);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero dei dipendenti non nel canale ID: " + idCanale, e);
+        }
+        return dipendenti;
     }
 }

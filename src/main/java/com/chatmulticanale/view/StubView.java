@@ -24,6 +24,10 @@ public class StubView implements View {
         this.message = message;
     }
 
+    public StubView() {
+        this.message = "Funzionalità non ancora implementata.";
+    }
+
     /**
      * Mostra il messaggio e attende la pressione di Invio per tornare indietro.
      * @return Un'istruzione Navigazione.indietro() per tornare alla vista precedente.

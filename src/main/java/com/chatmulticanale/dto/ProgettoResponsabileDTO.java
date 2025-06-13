@@ -10,6 +10,9 @@ public class ProgettoResponsabileDTO {
     private String nomeProgetto;
     private String nomeResponsabile;
     private String cognomeResponsabile;
+    private int idResponsabile;
+
+
 
     public int getIdProgetto() {
         return idProgetto;
@@ -41,5 +44,13 @@ public class ProgettoResponsabileDTO {
 
     public void setCognomeResponsabile(String cognomeResponsabile) {
         this.cognomeResponsabile = cognomeResponsabile;
+    }
+
+    public int getIdResponsabile() {
+        return idResponsabile;
+    }
+
+    public void setIdResponsabile(int idResponsabile) {
+        this.idResponsabile = idResponsabile;
     }
 }

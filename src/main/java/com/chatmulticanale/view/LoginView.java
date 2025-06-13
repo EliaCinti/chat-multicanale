@@ -1,6 +1,7 @@
 package com.chatmulticanale.view;
 
 import com.chatmulticanale.controller.AmministrazioneController;
+import com.chatmulticanale.controller.GestioneProgettiController;
 import com.chatmulticanale.controller.InterazioneUtenteController;
 import com.chatmulticanale.controller.LoginController;
 import com.chatmulticanale.exception.CommandException; // <-- NUOVO IMPORT
@@ -61,18 +62,15 @@ public class LoginView implements View {
      * @return La View appropriata per la home page dell'utente.
      */
     private View getHomeViewPerRuolo(Utente utente) {
-        // Usiamo uno switch expression per restituire direttamente la vista corretta.
         return switch (utente.getRuolo()) {
             case dipendente -> {
                 InterazioneUtenteController iuc = new InterazioneUtenteController();
                 yield new DipendenteHomeView(iuc);
             }
             case capoprogetto -> {
-                // Quando implementerai questa parte, creerai i controller qui
-                // GestioneProgettiController gpc = new GestioneProgettiController();
-                // InterazioneUtenteController iuc_cp = new InterazioneUtenteController();
-                // yield new CapoProgettoHomeView(iuc_cp, gpc);
-                yield new StubView("Home del Capo Progetto non ancora implementata.");
+                GestioneProgettiController gpc = new GestioneProgettiController();
+                InterazioneUtenteController iuc = new InterazioneUtenteController();
+                yield new CapoProgettoView(gpc, iuc);
             }
             case amministratore -> {
                 AmministrazioneController adminController = new AmministrazioneController();

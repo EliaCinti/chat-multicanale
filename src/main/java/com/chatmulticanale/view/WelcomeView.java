@@ -28,10 +28,10 @@ public class WelcomeView implements View {
      */
     @Override
     public Navigazione show() {
-        ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BLUE + "BENVENUTO in Chat-Multicanale!" + ColorUtils.ANSI_RESET);
 
         while (true) {
+            ViewUtils.clearScreen();
+            ViewUtils.println(ColorUtils.ANSI_BLUE + "BENVENUTO in Chat-Multicanale!" + ColorUtils.ANSI_RESET);
             ViewUtils.printSeparator();
             ViewUtils.println("1. Login");
             ViewUtils.println("2. Registrati (come Dipendente)");
@@ -48,7 +48,8 @@ public class WelcomeView implements View {
                 case 0:
                     return Navigazione.exit();
                 default:
-                    ViewUtils.println("Scelta non valida.");
+                    ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida." + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
             }
         }
     }
