@@ -1,5 +1,6 @@
 package com.chatmulticanale.utils;
 
+import com.chatmulticanale.dto.ChatPrivataDTO;
 import com.chatmulticanale.dto.ProgettoResponsabileDTO;
 import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.model.CanaleProgetto;
@@ -49,6 +50,10 @@ public class InputHelper {
                         break;
                     }
                     if (oggetto instanceof CanaleProgetto && ((CanaleProgetto) oggetto).getIdCanale() == id) {
+                        idTrovato = true;
+                        break;
+                    }
+                    if (oggetto instanceof ChatPrivataDTO && ((ChatPrivataDTO) oggetto).getIdChat() == id) {
                         idTrovato = true;
                         break;
                     }

@@ -2,7 +2,9 @@ package com.chatmulticanale.view;
 
 import com.chatmulticanale.controller.GestioneProgettiController;
 import com.chatmulticanale.controller.InterazioneUtenteController;
+import com.chatmulticanale.dto.ChatPrivataDTO;
 import com.chatmulticanale.dto.ChatSupervisioneDTO;
+import com.chatmulticanale.dto.MessaggioDTO;
 import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.model.CanaleProgetto;
 import com.chatmulticanale.model.Progetto;
@@ -11,7 +13,6 @@ import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.*;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
-
 import java.util.List;
 
 public class CapoProgettoView implements View {
@@ -76,23 +77,12 @@ public class CapoProgettoView implements View {
         }
     }
 
-    /**
-     * Gestisce la visualizzazione della lista dei progetti di cui il Capo Progetto loggato è responsabile.
-     * Recupera i dati tramite il controller e li formatta per la visualizzazione a console.
-     * L'interazione è di sola lettura e termina con una pausa prima di tornare al menu principale.
-     */
     private void handleVisualizzaMieiProgetti() {
         ViewUtils.clearScreen();
         ViewUtils.println(ColorUtils.ANSI_BOLD + "--- I MIEI PROGETTI ---" + ColorUtils.ANSI_RESET);
         ViewUtils.printSeparator();
-
-        // 1. Recupera l'ID dell'utente loggato dalla sessione
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
-
-        // 2. Chiama il controller per ottenere la lista dei progetti
         List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
-
-        // 3. Mostra i risultati all'utente
         if (mieiProgetti.isEmpty()) {
             ViewUtils.println("Al momento non sei responsabile di nessun progetto.");
         } else {
@@ -102,61 +92,40 @@ public class CapoProgettoView implements View {
                 ViewUtils.println(riga);
             });
         }
-
         ViewUtils.printSeparator();
-        // 4. Mette in pausa per dare il tempo di leggere e poi torna al menu principale
         InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
     }
 
-    /**
-     * Gestisce il flusso guidato per la creazione di un nuovo canale associato a un progetto.
-     * L'utente seleziona prima un progetto di sua competenza e poi fornisce i dettagli del nuovo canale.
-     */
     private void handleCreaCanale() {
-        ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- CREA NUOVO CANALE (CP1) ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
-        ViewUtils.printSeparator();
-
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
-
-        // 1. Chiedi all'utente per quale progetto vuole creare il canale
-        List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
-        if (mieiProgetti.isEmpty()) {
-            ViewUtils.println("Non hai progetti di cui sei responsabile, quindi non puoi creare canali.");
-            InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
-            return;
-        }
-
         try {
-            ViewUtils.println("Seleziona il progetto per cui vuoi creare un nuovo canale:");
-            mieiProgetti.forEach(p -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s", p.getIdProgetto(), p.getNomeProgetto())));
+            ViewUtils.clearScreen();
+            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- CREA NUOVO CANALE (CP1) ---" + ColorUtils.ANSI_RESET);
+            ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
             ViewUtils.printSeparator();
-
-            int idProgettoSelezionato = InputHelper.chiediIdValido("Inserisci l'ID del progetto: ", mieiProgetti);
-
-            // 2. Chiedi i dettagli del nuovo canale
+            List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
+            if (mieiProgetti.isEmpty()) {
+                ViewUtils.println("Non hai progetti di cui sei responsabile, quindi non puoi creare canali.");
+                InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+                return;
+            }
+            int idProgettoSelezionato = selezionaProgetto(mieiProgetti, "Seleziona il progetto per cui vuoi creare un nuovo canale:");
             ViewUtils.println("\nOra inserisci i dettagli per il nuovo canale.");
             String nomeCanale = InputUtils.askForInput("Nome del canale: ");
             String descrizioneCanale = InputUtils.askForInput("Descrizione del canale: ");
-
-            // 3. Chiama il controller per eseguire l'azione
             if (gestioneController.creaNuovoCanalePerProgetto(nomeCanale, descrizioneCanale, idProgettoSelezionato, idUtenteLoggato)) {
                 ViewUtils.println(ColorUtils.ANSI_GREEN + "\nCanale '" + nomeCanale + "' creato con successo!" + ColorUtils.ANSI_RESET);
             } else {
                 ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile creare il canale. Il nome potrebbe essere già in uso per questo progetto." + ColorUtils.ANSI_RESET);
             }
-
         } catch (CommandException e) {
             ViewUtils.println("\nOperazione annullata.");
         }
-
         InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
     }
 
     private void handleAggiungiUtenteACanale() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
-
         try {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
@@ -164,70 +133,52 @@ public class CapoProgettoView implements View {
                 InputUtils.pressEnterToContinue("");
                 return;
             }
-
             progettoLoop:
             while (true) {
                 ViewUtils.clearScreen();
                 ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AGGIUNGI DIPENDENTE A CANALE (CP2) ---" + ColorUtils.ANSI_RESET);
                 ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
                 ViewUtils.printSeparator();
-
-                String promptProgetto = "Seleziona il progetto di cui vuoi modificare un canale:";
-                int idProgetto = selezionaProgetto(mieiProgetti, promptProgetto);
-
+                int idProgetto = selezionaProgetto(mieiProgetti, "Seleziona il progetto di cui vuoi modificare un canale:");
                 List<CanaleProgetto> canali = gestioneController.getCanaliDelProgetto(idProgetto);
                 if (canali.isEmpty()) {
                     ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Questo progetto non ha canali." + ColorUtils.ANSI_RESET);
                     InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del progetto...");
                     continue;
                 }
-
                 while (true) {
-                    int idCanale;
                     try {
-                        String promptCanale = "Seleziona il canale a cui aggiungere un dipendente:";
-                        idCanale = selezionaCanale(canali, promptCanale);
+                        int idCanale = selezionaCanale(canali, "Seleziona il canale a cui aggiungere un dipendente (o usa /b per scegliere un altro progetto):");
+                        List<Utente> dipendenti = gestioneController.getDipendentiAggiungibili(idCanale);
+                        if (dipendenti.isEmpty()) {
+                            ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono altri dipendenti da poter aggiungere a questo canale." + ColorUtils.ANSI_RESET);
+                            InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del canale...");
+                            ViewUtils.clearScreen();
+                            continue;
+                        }
+                        ViewUtils.println("\nSeleziona il dipendente da aggiungere al canale:");
+                        dipendenti.forEach(d -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s %s", d.getIdUtente(), d.getNome(), d.getCognome())));
+                        ViewUtils.printSeparator();
+                        int idDipendente = InputHelper.chiediIdValido("ID Dipendente: ", dipendenti);
+                        if (gestioneController.aggiungiDipendenteACanale(idCanale, idDipendente)) {
+                            ViewUtils.println(ColorUtils.ANSI_GREEN + "\nDipendente aggiunto al canale con successo!" + ColorUtils.ANSI_RESET);
+                        } else {
+                            ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile aggiungere il dipendente." + ColorUtils.ANSI_RESET);
+                        }
+                        break progettoLoop;
                     } catch (CommandException e) {
                         break;
                     }
-
-                    List<Utente> dipendenti = gestioneController.getDipendentiAggiungibili(idCanale);
-                    if (dipendenti.isEmpty()) {
-                        ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono altri dipendenti da poter aggiungere a questo canale." + ColorUtils.ANSI_RESET);
-                        InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del canale...");
-                        continue;
-                    }
-
-                    ViewUtils.println("\nSeleziona il dipendente da aggiungere al canale:");
-                    dipendenti.forEach(d -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s %s", d.getIdUtente(), d.getNome(), d.getCognome())));
-                    ViewUtils.printSeparator();
-                    int idDipendente = InputHelper.chiediIdValido("ID Dipendente: ", dipendenti);
-
-                    if (gestioneController.aggiungiDipendenteACanale(idCanale, idDipendente)) {
-                        ViewUtils.println(ColorUtils.ANSI_GREEN + "\nDipendente aggiunto al canale con successo!" + ColorUtils.ANSI_RESET);
-                    } else {
-                        ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile aggiungere il dipendente." + ColorUtils.ANSI_RESET);
-                    }
-
-                    break progettoLoop;
                 }
             }
-
         } catch (CommandException e) {
             ViewUtils.println("\nOperazione annullata. Ritorno alla home...");
         }
-
         InputUtils.pressEnterToContinue("\nPremi Invio per tornare alla home...");
     }
 
-    /**
-     * Gestisce il flusso per rimuovere un Dipendente da un canale di un progetto.
-     * Guida l'utente nella selezione del progetto, del canale e del dipendente da rimuovere,
-     * con una navigazione che permette di tornare indietro a ogni passo.
-     */
     private void handleRimuoviUtenteDaCanale() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
-
         try {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
@@ -235,134 +186,99 @@ public class CapoProgettoView implements View {
                 InputUtils.pressEnterToContinue("");
                 return;
             }
-
             progettoLoop:
             while (true) {
                 ViewUtils.clearScreen();
                 ViewUtils.println(ColorUtils.ANSI_BOLD + "--- RIMUOVI DIPENDENTE DA CANALE (CP3) ---" + ColorUtils.ANSI_RESET);
                 ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
                 ViewUtils.printSeparator();
-
-                String promptProgetto = "Seleziona il progetto da cui vuoi modificare un canale:";
-                int idProgetto = selezionaProgetto(mieiProgetti, promptProgetto);
-                ViewUtils.printSeparator();
-
+                int idProgetto = selezionaProgetto(mieiProgetti, "Seleziona il progetto da cui vuoi modificare un canale:");
                 List<CanaleProgetto> canali = gestioneController.getCanaliDelProgetto(idProgetto);
                 if (canali.isEmpty()) {
                     ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Questo progetto non ha canali." + ColorUtils.ANSI_RESET);
                     InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del progetto...");
                     continue;
                 }
-
                 while (true) {
-                    int idCanale;
                     try {
-                        String prompt = "Seleziona il canale da cui rimuovere un dipendente:";
-                        idCanale = selezionaCanale(canali, prompt);
+                        int idCanale = selezionaCanale(canali, "Seleziona il canale da cui rimuovere un dipendente (o usa /b per scegliere un altro progetto):");
+                        List<Utente> dipendentiNelCanale = gestioneController.getDipendentiDelCanale(idCanale);
+                        if (dipendentiNelCanale.isEmpty()) {
+                            ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono dipendenti da poter rimuovere da questo canale." + ColorUtils.ANSI_RESET);
+                            InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del canale...");
+                            ViewUtils.clearScreen();
+                            continue;
+                        }
+                        ViewUtils.println("\nSeleziona il dipendente da rimuovere dal canale:");
+                        dipendentiNelCanale.forEach(d -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s %s", d.getIdUtente(), d.getNome(), d.getCognome())));
+                        ViewUtils.printSeparator();
+                        int idDipendente = InputHelper.chiediIdValido("ID Dipendente: ", dipendentiNelCanale);
+                        if (gestioneController.rimuoviDipendenteDaCanale(idCanale, idDipendente)) {
+                            ViewUtils.println(ColorUtils.ANSI_GREEN + "\nDipendente rimosso dal canale con successo!" + ColorUtils.ANSI_RESET);
+                        } else {
+                            ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile rimuovere il dipendente." + ColorUtils.ANSI_RESET);
+                        }
+                        break progettoLoop;
                     } catch (CommandException e) {
                         break;
                     }
-
-                    List<Utente> dipendentiNelCanale = gestioneController.getDipendentiDelCanale(idCanale);
-                    if (dipendentiNelCanale.isEmpty()) {
-                        ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono dipendenti da poter rimuovere da questo canale." + ColorUtils.ANSI_RESET);
-                        InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del canale...");
-                        continue;
-                    }
-
-                    ViewUtils.println("\nSeleziona il dipendente da rimuovere dal canale:");
-                    dipendentiNelCanale.forEach(d -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s %s", d.getIdUtente(), d.getNome(), d.getCognome())));
-                    ViewUtils.printSeparator();
-                    int idDipendente = InputHelper.chiediIdValido("ID Dipendente: ", dipendentiNelCanale);
-
-                    if (gestioneController.rimuoviDipendenteDaCanale(idCanale, idDipendente)) {
-                        ViewUtils.println(ColorUtils.ANSI_GREEN + "\nDipendente rimosso dal canale con successo!" + ColorUtils.ANSI_RESET);
-                    } else {
-                        ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile rimuovere il dipendente." + ColorUtils.ANSI_RESET);
-                    }
-
-                    break progettoLoop;
                 }
             }
-
         } catch (CommandException e) {
             ViewUtils.println("\nOperazione annullata. Ritorno alla home...");
         }
-
         InputUtils.pressEnterToContinue("\nPremi Invio per tornare alla home...");
     }
 
-    /**
-     * Gestisce il flusso per la supervisione (sola lettura) delle chat private
-     * originate da un progetto di cui l'utente è responsabile.
-     */
     private void handleSupervisionaChatPrivate() {
-        ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- SUPERVISIONE CHAT PRIVATE (CP4) ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.printSeparator();
-
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
-
         try {
-            // 1. Seleziona il progetto (riutilizziamo il nostro helper!)
+            ViewUtils.clearScreen();
+            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- SUPERVISIONE CHAT PRIVATE (CP4) ---" + ColorUtils.ANSI_RESET);
+            ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
+            ViewUtils.printSeparator();
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
                 ViewUtils.println("Non hai progetti da gestire.");
                 InputUtils.pressEnterToContinue("");
                 return;
             }
-            String promptProgetto = "Seleziona il progetto di cui vuoi supervisionare le chat private:";
-            int idProgetto = selezionaProgetto(mieiProgetti, promptProgetto);
-
-            // 2. Chiama il controller per ottenere la lista di chat
+            int idProgetto = selezionaProgetto(mieiProgetti, "Seleziona il progetto di cui vuoi supervisionare le chat private:");
             List<ChatSupervisioneDTO> chatDaSupervisionare = gestioneController.getChatPrivateDaSupervisionare(idProgetto, idUtenteLoggato);
-
-            // 3. Gestisci i possibili risultati
             if (chatDaSupervisionare == null) {
-                // Questo accade se la SP ha restituito un errore (es. non sei il responsabile)
-                ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Non sei autorizzato a visualizzare le chat di questo progetto o si è verificato un problema." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Non sei autorizzato o si è verificato un problema." + ColorUtils.ANSI_RESET);
             } else if (chatDaSupervisionare.isEmpty()) {
                 ViewUtils.println("Non ci sono chat private originate da questo progetto da supervisionare.");
             } else {
                 String nomeProgettoSelezionato = mieiProgetti.stream()
-                        .filter(p -> p.getIdProgetto() == idProgetto)
-                        .findFirst()
-                        .map(Progetto::getNomeProgetto)
-                        .orElse("ID: " + idProgetto); // Un fallback nel caso impossibile
-
+                        .filter(p -> p.getIdProgetto() == idProgetto).findFirst()
+                        .map(Progetto::getNomeProgetto).orElse("");
                 ViewUtils.println("\nElenco delle chat private originate dal progetto '" + nomeProgettoSelezionato + "':");
                 ViewUtils.printSeparator();
-
-                // Formattazione per una buona leggibilità
-                String header = String.format("%-5s | %-20s | %-18s | %-18s | %s",
-                        "ID", "Data Creazione", "Partecipanti", "Canale Origine", "Messaggio Origine");
+                String header = String.format("%-5s | %-20s | %-25s | %-18s | %s", "ID", "Data Creazione", "Partecipanti", "Canale Origine", "Messaggio Origine");
                 ViewUtils.println(ColorUtils.ANSI_BOLD + header + ColorUtils.ANSI_RESET);
-
                 for (ChatSupervisioneDTO chat : chatDaSupervisionare) {
                     String partecipanti = chat.getCreatoreChatUsername() + " <-> " + chat.getPartecipanteChatUsername();
-                    String riga = String.format("%-5d | %-20s | %-18s | %-18s | '%s'",
-                            chat.getIdChat(),
-                            chat.getDataCreazioneChat(),
-                            partecipanti,
-                            chat.getCanaleOrigineNome(),
-                            chat.getMessaggioOrigineContenuto());
+                    String riga = String.format("%-5d | %-20s | %-25s | %-18s | '%s'",
+                            chat.getIdChat(), chat.getDataCreazioneChat(), partecipanti,
+                            chat.getCanaleOrigineNome(), chat.getMessaggioOrigineContenuto());
                     ViewUtils.println(riga);
                 }
-
-                // TODO: In futuro, qui chiederemo di selezionare una chat per vederne i dettagli.
+                ViewUtils.printSeparator();
+                try {
+                    String promptChat = "Inserisci l'ID della chat da visualizzare (o usa /b per tornare):";
+                    int idChatSelezionata = InputHelper.chiediIdValido(promptChat, chatDaSupervisionare);
+                    new ChatView(interazioneController, idChatSelezionata, TipoContestoChat.CHAT_PRIVATA, true, idUtenteLoggato).show();
+                } catch (CommandException e) {
+                    // Non fa nulla, prosegue
+                }
             }
-
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println("\nOperazione annullata. Ritorno alla home...");
         }
-
         InputUtils.pressEnterToContinue("\nPremi Invio per tornare alla home...");
     }
 
-    /**
-     * Gestisce l'accesso alle aree di comunicazione dell'utente (canali e chat private).
-     * Presenta un sotto-menu per permettere all'utente di scegliere dove interagire.
-     */
     private void handleAccediACanaliEChat() {
         while (true) {
             ViewUtils.clearScreen();
@@ -372,9 +288,7 @@ public class CapoProgettoView implements View {
             ViewUtils.println("2. Accedi alle Chat Private");
             ViewUtils.println("0. Torna alla Home Principale");
             ViewUtils.printSeparator();
-
             int scelta = InputUtils.readInt("Seleziona un'opzione: ");
-
             try {
                 switch (scelta) {
                     case 1:
@@ -384,80 +298,157 @@ public class CapoProgettoView implements View {
                         handleAccessoChatPrivate();
                         break;
                     case 0:
-                        return; // Esce dal metodo e torna al menu della home
+                        return;
                     default:
                         ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida." + ColorUtils.ANSI_RESET);
                         InputUtils.pressEnterToContinue("");
                 }
             } catch (CommandException e) {
-                // Se l'utente preme /b in una delle sotto-funzioni,
-                // l'eccezione viene "mangiata" qui e il loop del sotto-menu riparte.
-                // Questo permette di tornare a questo menu, non alla home principale.
+                // Cattura il /b e ripropone il menu
             }
         }
     }
 
-    // In CapoProgettoView.java
-
-    /**
-     * Gestisce la selezione e l'accesso a un canale di progetto specifico.
-     * Una volta selezionato un canale, lancia la ChatView per visualizzarne la conversazione.
-     * @throws CommandException se l'utente sceglie di tornare indietro durante la selezione.
-     */
     private void handleAccessoCanaliProgetto() throws CommandException {
         ViewUtils.clearScreen();
         ViewUtils.println(ColorUtils.ANSI_BOLD + "--- ACCESSO AI CANALI DI PROGETTO ---" + ColorUtils.ANSI_RESET);
         ViewUtils.println("Digita '/b' o '/back' per tornare al menu precedente.");
+        ViewUtils.printSeparator();
+        int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
+        List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
+        if (mieiCanali.isEmpty()) {
+            ViewUtils.println("Non partecipi a nessun canale di progetto.");
+            InputUtils.pressEnterToContinue("");
+            return;
+        }
+        String prompt = "Seleziona un canale per visualizzarne i messaggi:";
+        int idCanaleSelezionato = selezionaCanale(mieiCanali, prompt);
+        new ChatView(interazioneController, idCanaleSelezionato, TipoContestoChat.CANALE_PROGETTO, false, idUtenteLoggato).show();
+    }
+
+    /**
+     * Gestisce l'accesso all'area delle chat private, presentando un sotto-menu
+     * per visualizzare le chat esistenti o avviarne una nuova.
+     * @throws CommandException se l'utente sceglie di tornare indietro.
+     */
+    private void handleAccessoChatPrivate() throws CommandException {
+        while (true) {
+            ViewUtils.clearScreen();
+            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AREA CHAT PRIVATE ---" + ColorUtils.ANSI_RESET);
+            ViewUtils.printSeparator();
+            ViewUtils.println("1. Visualizza le tue chat");
+            ViewUtils.println("2. Avvia una nuova chat da un messaggio di un canale");
+            ViewUtils.printSeparator();
+            ViewUtils.println("0. Torna al menu precedente");
+            ViewUtils.printSeparator();
+
+            int scelta = InputUtils.readInt("Seleziona un'opzione: ");
+
+            switch (scelta) {
+                case 1:
+                    handleVisualizzaMieChat();
+                    break;
+                case 2:
+                    handleAvviaNuovaChatDaCanale();
+                    break;
+                case 0:
+                    return; // Esce e torna al menu delle comunicazioni
+                default:
+                    ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida." + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue("");
+            }
+        }
+    }
+
+    /**
+     * Mostra la lista delle chat private dell'utente e permette di selezionarne
+     * una per visualizzarne la conversazione.
+     * @throws CommandException se l'utente usa /b.
+     */
+    private void handleVisualizzaMieChat() throws CommandException {
+        ViewUtils.clearScreen();
+        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- LE TUE CHAT PRIVATE ---" + ColorUtils.ANSI_RESET);
+        ViewUtils.printSeparator();
+
+        int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
+        List<ChatPrivataDTO> mieChat = interazioneController.getMieChatPrivate(idUtenteLoggato);
+
+        if (mieChat.isEmpty()) {
+            ViewUtils.println("Non hai nessuna chat privata attiva.");
+            InputUtils.pressEnterToContinue("Premi Invio per tornare indietro...");
+            return;
+        }
+
+        ViewUtils.println("Elenco delle tue conversazioni private:");
+        String header = String.format("%-5s | %-20s | %s", "ID", "Avviata il", "Conversazione con");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + header + ColorUtils.ANSI_RESET);
+
+        mieChat.forEach(chat -> {
+            String riga = String.format("%-5d | %-20s | %s",
+                    chat.getIdChat(), chat.getDataCreazione(), chat.getAltroPartecipanteUsername());
+            ViewUtils.println(riga);
+        });
+        ViewUtils.printSeparator();
+
+        // Aggiungiamo il tipo ChatPrivataDTO a InputHelper
+        int idChatSelezionata = InputHelper.chiediIdValido("Inserisci l'ID della chat da visualizzare: ", mieChat);
+
+        new ChatView(
+                interazioneController,
+                idChatSelezionata,
+                TipoContestoChat.CHAT_PRIVATA,
+                false, // Non è in sola lettura, puoi partecipare
+                idUtenteLoggato
+        ).show();
+    }
+
+    /**
+     * Guida l'utente attraverso il processo di avvio di una nuova chat privata,
+     * partendo dalla selezione di un canale e di un messaggio.
+     * @throws CommandException se l'utente usa /b.
+     */
+    private void handleAvviaNuovaChatDaCanale() throws CommandException {
+        ViewUtils.clearScreen();
+        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AVVIA NUOVA CHAT PRIVATA ---" + ColorUtils.ANSI_RESET);
+        ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
         ViewUtils.printSeparator();
 
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
 
         if (mieiCanali.isEmpty()) {
-            ViewUtils.println("Non partecipi a nessun canale di progetto.");
+            ViewUtils.println("Devi partecipare ad almeno un canale per poter avviare una chat.");
             InputUtils.pressEnterToContinue("");
-            return; // Termina il metodo se non ci sono canali
+            return;
         }
 
-        // Se siamo qui, ci sono canali da mostrare.
-        // La gestione della CommandException viene fatta dal blocco try-catch nel metodo chiamante.
-        String prompt = "Seleziona un canale per visualizzarne i messaggi:";
-        int idCanaleSelezionato = selezionaCanale(mieiCanali, prompt);
+        // La CommandException dalla selezione del canale viene gestita dal chiamante
+        String promptCanale = "Seleziona il canale contenente il messaggio da cui partire:";
+        int idCanaleSelezionato = selezionaCanale(mieiCanali, promptCanale);
 
-        new ChatView(
-                interazioneController,              // Il controller per le interazioni
-                idCanaleSelezionato,                // L'ID del canale da visualizzare
-                TipoContestoChat.CANALE_PROGETTO,   // Il tipo di contesto
-                false,                              // 'solaLettura' è false, l'utente può interagire
-                idUtenteLoggato                     // L'ID dell'utente che sta visualizzando
-        ).show();
+        // Mostriamo solo la prima pagina di messaggi per la selezione
+        List<MessaggioDTO> messaggi = interazioneController.getPaginaMessaggiCanale(idCanaleSelezionato, idUtenteLoggato, 1);
 
-        // Dopo che l'utente esce dalla ChatView (con /b), il metodo termina.
-        // Il controllo torna al loop del sottomenu in handleAccediACanaliEChat.
-        // Non serve un "pressEnterToContinue" qui, perché il ritorno è gestito dalla navigazione.
+        if (messaggi.isEmpty()) {
+            ViewUtils.println("Questo canale non ha messaggi da cui avviare una chat.");
+            InputUtils.pressEnterToContinue("");
+            return;
+        }
+
+        ViewUtils.println("\n--- Messaggi del Canale (Pagina 1) ---");
+        messaggi.forEach(msg -> {
+            String riga = String.format("ID %-4d | [%s] %s: %s",
+                    msg.getIdMessaggio(), new java.text.SimpleDateFormat("dd-MM-yyyy HH:mm").format(msg.getTimestamp()),
+                    msg.getUsernameMittente(), msg.getContenuto());
+            ViewUtils.println(riga);
+        });
+        ViewUtils.printSeparator();
+
+        ViewActionHelper.avviaChatPrivataDaListaMessaggi(messaggi, idUtenteLoggato, this.interazioneController);
+        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu precedente...");
     }
 
-    /**
-     * Gestisce l'accesso all'area delle chat private, presentando un ulteriore sotto-menu.
-     * @throws CommandException se l'utente sceglie di tornare indietro.
-     */
-    private void handleAccessoChatPrivate() throws CommandException {
-        // While (true) {
-        //     Mostra sotto-menu: [1] Visualizza chat esistenti, [2] Avvia nuova chat, [0] Indietro
-        //     switch (scelta) { ... }
-        // }
-        new StubView("Gestione Chat Private non ancora implementata.").show();
-    }
 
-    /**
-     * Metodo helper per gestire la selezione di un progetto da parte dell'utente.
-     * Mostra una lista di progetti e chiede di inserire un ID valido.
-     *
-     * @param progetti La lista di {@link Progetto} da cui scegliere.
-     * @param prompt Il messaggio da mostrare all'utente prima della lista.
-     * @return L'ID del progetto selezionato.
-     * @throws CommandException se l'utente inserisce un comando per tornare indietro (es. /b).
-     */
     private int selezionaProgetto(List<Progetto> progetti, String prompt) throws CommandException {
         ViewUtils.println(prompt);
         progetti.forEach(p -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s", p.getIdProgetto(), p.getNomeProgetto())));
@@ -465,15 +456,6 @@ public class CapoProgettoView implements View {
         return InputHelper.chiediIdValido("ID Progetto: ", progetti);
     }
 
-    /**
-     * Metodo helper per gestire la selezione di un canale da parte dell'utente.
-     * Mostra una lista di canali e chiede di inserire un ID valido.
-     *
-     * @param canali La lista di {@link CanaleProgetto} da cui scegliere.
-     * @param prompt Il messaggio da mostrare all'utente prima della lista (es. "Seleziona il canale a cui aggiungere...").
-     * @return L'ID del canale selezionato.
-     * @throws CommandException se l'utente inserisce un comando per tornare indietro (es. /b).
-     */
     private int selezionaCanale(List<CanaleProgetto> canali, String prompt) throws CommandException {
         ViewUtils.println("\n" + prompt);
         canali.forEach(c -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s", c.getIdCanale(), c.getNomeCanale())));

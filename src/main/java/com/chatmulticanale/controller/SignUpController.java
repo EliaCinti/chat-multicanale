@@ -4,7 +4,6 @@ import com.chatmulticanale.dao.UtenteDAO;
 import com.chatmulticanale.model.Ruolo;
 import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.PasswordUtils;
-import com.chatmulticanale.utils.ViewUtils;
 import java.sql.SQLException;
 
 /**

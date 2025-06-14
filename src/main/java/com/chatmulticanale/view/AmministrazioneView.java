@@ -3,7 +3,7 @@ package com.chatmulticanale.view;
 import com.chatmulticanale.controller.AmministrazioneController;
 import com.chatmulticanale.dto.ProgettoResponsabileDTO;
 import com.chatmulticanale.exception.CommandException;
-import com.chatmulticanale.model.Progetto; // <-- NUOVO IMPORT
+import com.chatmulticanale.model.Progetto;
 import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.*;
 import com.chatmulticanale.view.navigation.Navigazione;

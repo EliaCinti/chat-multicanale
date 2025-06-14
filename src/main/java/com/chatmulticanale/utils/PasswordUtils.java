@@ -43,9 +43,4 @@ public class PasswordUtils {
         // and compare the result with the stored hash
         return BCrypt.checkpw(plainTextPassword, hashedPassword);
     }
-
-    // Metodo per generare una password hashata per iniettare il primo amministartore nel db (seeding)
-    public static String hashGenerator(String passwordInChiaro) {
-        return hashPassword(passwordInChiaro);
-    }
 }

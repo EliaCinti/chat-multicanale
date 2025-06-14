@@ -20,6 +20,7 @@ public class MessaggioDAO {
     private static final String SP_INVIA_MESSAGGIO_CANALE_CITAZIONE = "{CALL sp_UT1b_InviaMessaggioCanaleConCitazione(?, ?, ?, ?)}";
     private static final String SP_INVIA_MESSAGGIO_CHAT = "{CALL sp_UT4a_InviaMessaggioChatPrivataSemplice(?, ?, ?)}";
     private static final String SP_INVIA_MESSAGGIO_CHAT_CITAZIONE = "{CALL sp_UT4b_InviaMessaggioChatPrivataConCitazione(?, ?, ?, ?)}";
+    private static final String SP_GET_MESSAGGI_CHAT = "{CALL sp_UT5_VisualizzaMessaggiChatPrivata(?, ?, ?, ?)}";
 
     /**
      * Recupera una pagina di messaggi da un canale di progetto, arricchiti con
@@ -53,6 +54,42 @@ public class MessaggioDAO {
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante il recupero dei messaggi per il canale ID: " + idCanale, e);
+        }
+        return messaggi;
+    }
+
+    /**
+     * Recupera una pagina di messaggi da una chat privata, arricchiti con
+     * le informazioni del mittente, utilizzando la Stored Procedure sp_UT5.
+     *
+     * @param idChat L'ID della chat privata.
+     * @param idVisualizzatore L'ID dell'utente che sta visualizzando i messaggi.
+     * @param dimensionePagina Il numero di messaggi per pagina.
+     * @param numeroPagina Il numero della pagina (partendo da 1).
+     * @return Una lista di {@link MessaggioDTO}.
+     */
+    public List<MessaggioDTO> getMessaggiChatPrivataPaginati(int idChat, int idVisualizzatore, int dimensionePagina, int numeroPagina) {
+        List<MessaggioDTO> messaggi = new ArrayList<>();
+
+        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_GET_MESSAGGI_CHAT)) {
+            // Impostiamo i parametri nell'ordine corretto
+            stmt.setInt(1, idChat);
+            stmt.setInt(2, idVisualizzatore);
+            stmt.setInt(3, numeroPagina);
+            stmt.setInt(4, dimensionePagina);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    MessaggioDTO dto = new MessaggioDTO();
+                    dto.setIdMessaggio(rs.getInt("ID_Messaggio"));
+                    dto.setContenuto(rs.getString("Contenuto"));
+                    dto.setTimestamp(rs.getTimestamp("Timestamp"));
+                    dto.setUsernameMittente(rs.getString("Mittente_Username"));
+                    messaggi.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero dei messaggi per la chat privata ID: " + idChat, e);
         }
         return messaggi;
     }

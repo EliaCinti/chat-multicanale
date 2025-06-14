@@ -48,12 +48,4 @@ public final class SessionManager {
     public Utente getUtenteLoggato() {
         return utenteLoggato;
     }
-
-    /**
-     * Controlla se c'è un utente loggato.
-     * @return true se un utente è loggato, false altrimenti.
-     */
-    public boolean isUserLoggedIn() {
-        return utenteLoggato != null;
-    }
 }

@@ -14,8 +14,6 @@ public class PartecipaCanaleDAO {
     // --- Stored Procedures ---
     private static final String SP_AGGIUNGI_UTENTE_A_CANALE = "{CALL sp_CP2_AggiungiUtenteACanale(?, ?)}";
     private static final String SP_RIMUOVI_UTENTE_DA_CANALE = "{CALL sp_CP3_RimuoviUtenteDaCanale(?, ?)}";
-    // --- Query Dirette ---
-
 
     /**
      * Aggiunge un utente a un canale specifico eseguendo la Stored Procedure sp_CP2.

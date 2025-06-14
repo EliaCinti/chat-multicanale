@@ -1,5 +1,6 @@
 package com.chatmulticanale.dao;
 
+import com.chatmulticanale.dto.ChatPrivataDTO;
 import com.chatmulticanale.dto.ChatSupervisioneDTO;
 import com.chatmulticanale.utils.DatabaseConnector;
 import java.sql.CallableStatement;
@@ -17,6 +18,7 @@ public class ChatPrivataDAO {
     // --- Stored Procedures ---
     private static final String SP_GET_CHAT_DA_SUPERVISIONARE = "{CALL sp_CP4_AccediChatPrivateProgetto(?, ?)}";
     private static final String SP_AVVIA_CHAT_PRIVATA = "{CALL sp_UT3_AvviaChatPrivataDaMessaggio(?, ?)}";
+    private static final String SP_GET_CHAT_UTENTE = "{CALL sp_UT7_VisualizzaElencoChatPrivatePersonali(?)}";
 
     // --- Query Dirette ---
 
@@ -83,5 +85,34 @@ public class ChatPrivataDAO {
             logger.log(Level.WARNING, "Tentativo di avviare una chat dal messaggio ID " + idMessaggioOrigine + " da parte dell'utente ID " + idUtenteIniziatore + " fallito: " + e.getMessage());
             throw e;
         }
+    }
+
+    /**
+     * Recupera la lista di tutte le chat private in cui un utente è coinvolto.
+     * Utilizza la Stored Procedure sp_UT7.
+     *
+     * @param idUtente L'ID dell'utente.
+     * @return Una lista di {@link ChatPrivataDTO}.
+     */
+    public List<ChatPrivataDTO> getChatDiUtente(int idUtente) {
+        List<ChatPrivataDTO> chatList = new ArrayList<>();
+        // Usiamo la nuova SP
+        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_GET_CHAT_UTENTE)) {
+            stmt.setInt(1, idUtente);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ChatPrivataDTO dto = new ChatPrivataDTO();
+                    dto.setIdChat(rs.getInt("ID_Chat"));
+                    dto.setDataCreazione(rs.getTimestamp("Timestamp_Creazione"));
+                    // La SP ci dà già direttamente il nome dell'altro partecipante
+                    dto.setAltroPartecipanteUsername(rs.getString("Altro_Partecipante_Username"));
+                    chatList.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero delle chat per l'utente ID: " + idUtente, e);
+        }
+        return chatList;
     }
 }

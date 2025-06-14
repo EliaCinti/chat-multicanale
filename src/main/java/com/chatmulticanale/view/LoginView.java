@@ -65,7 +65,7 @@ public class LoginView implements View {
         return switch (utente.getRuolo()) {
             case dipendente -> {
                 InterazioneUtenteController iuc = new InterazioneUtenteController();
-                yield new DipendenteHomeView(iuc);
+                yield new DipendenteView(iuc);
             }
             case capoprogetto -> {
                 GestioneProgettiController gpc = new GestioneProgettiController();

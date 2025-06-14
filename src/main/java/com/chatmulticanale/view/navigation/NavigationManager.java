@@ -1,7 +1,5 @@
 package com.chatmulticanale.view.navigation;
 
-import com.chatmulticanale.utils.SessionManager;
-
 import java.util.Stack;
 
 /**

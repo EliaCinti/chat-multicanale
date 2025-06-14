@@ -1,4 +1,3 @@
-// src/main/java/com/chatmulticanale/view/ChatView.java
 package com.chatmulticanale.view;
 
 import com.chatmulticanale.controller.InterazioneUtenteController;
@@ -41,9 +40,7 @@ public class ChatView {
             if (tipoContesto == TipoContestoChat.CANALE_PROGETTO) {
                 messaggi = controller.getPaginaMessaggiCanale(idContesto, this.idUtenteLoggato, paginaCorrente);
             } else { // CHAT_PRIVATA
-                // TODO: Implementare la chiamata al controller per i messaggi della chat privata quando servirà
-                // messaggi = controller.getPaginaMessaggiChatPrivata(idContesto, this.idUtenteLoggato, paginaCorrente);
-                messaggi = List.of(); // Per ora, rimane vuota
+                messaggi = controller.getPaginaMessaggiChatPrivata(idContesto, this.idUtenteLoggato, paginaCorrente);
             }
 
             ViewUtils.println(ColorUtils.ANSI_BOLD + "--- Conversazione (Pagina " + paginaCorrente + ") ---" + ColorUtils.ANSI_RESET);
@@ -74,7 +71,6 @@ public class ChatView {
             }
 
             ViewUtils.printSeparator();
-            // --- MENU OPZIONI AGGIORNATO E CONDIZIONALE ---
             ViewUtils.print("Opzioni: [N] Pag. Succ. | [P] Pag. Prec.");
             if (!solaLettura) {
                 ViewUtils.print(" | [I] Invia | [C] Cita");
@@ -109,7 +105,6 @@ public class ChatView {
                             handleCitaMessaggio(messaggi); // Messaggio con citazione
                         }
                         break;
-                    // --- NUOVO CASE PER "AVVIA CHAT" ---
                     case "a":
                         if (!solaLettura && tipoContesto == TipoContestoChat.CANALE_PROGETTO) {
                             handleAvviaChatPrivata(messaggi);
@@ -214,12 +209,18 @@ public class ChatView {
             boolean idValido = messaggiVisibili.stream().anyMatch(m -> m.getIdMessaggio() == idMessaggioOrigine);
 
             if (idValido) {
-                if (controller.avviaNuovaChatPrivata(idMessaggioOrigine, this.idUtenteLoggato)) {
+                // --- INIZIO MODIFICA ---
+                // Il metodo ora restituisce un Optional<String>
+                java.util.Optional<String> errorOptional = controller.avviaNuovaChatPrivata(idMessaggioOrigine, this.idUtenteLoggato);
+
+                if (errorOptional.isEmpty()) { // .isEmpty() significa successo!
                     ViewUtils.println(ColorUtils.ANSI_GREEN + "\nChat privata avviata con successo!" + ColorUtils.ANSI_RESET);
                     ViewUtils.println("Ora puoi accedervi dalla sezione 'Chat Private' nella home.");
-                } else {
-                    ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile avviare la chat. Non puoi avviare una chat con te stesso." + ColorUtils.ANSI_RESET);
+                } else { // Se l'Optional contiene qualcosa, è il messaggio di errore
+                    ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile avviare la chat." + ColorUtils.ANSI_RESET);
+                    ViewUtils.println(ColorUtils.ANSI_RED + "Motivo: " + errorOptional.get() + ColorUtils.ANSI_RESET);
                 }
+                // --- FINE MODIFICA ---
             } else {
                 ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Puoi avviare una chat solo da un messaggio presente in questa pagina." + ColorUtils.ANSI_RESET);
             }

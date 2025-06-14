@@ -1,14 +1,15 @@
-// src/main/java/com/chatmulticanale/controller/InterazioneUtenteController.java
 package com.chatmulticanale.controller;
 
 import com.chatmulticanale.dao.CanaleProgettoDAO;
 import com.chatmulticanale.dao.ChatPrivataDAO;
 import com.chatmulticanale.dao.MessaggioDAO;
+import com.chatmulticanale.dto.ChatPrivataDTO;
 import com.chatmulticanale.dto.MessaggioDTO;
 import com.chatmulticanale.model.CanaleProgetto;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class InterazioneUtenteController {
 
@@ -95,21 +96,41 @@ public class InterazioneUtenteController {
     }
 
     /**
-     * Gestisce la logica per avviare una nuova chat privata.
+     * Gestisce la logica di business per avviare una nuova chat privata a partire da un messaggio.
+     * Tenta di creare la chat tramite il DAO e restituisce un risultato che indica l'esito.
      *
-     * @param idMessaggioOrigine L'ID del messaggio da cui partire.
-     * @param idIniziatore L'ID dell'utente che avvia la chat.
-     * @return true se la creazione ha successo, false altrimenti.
+     * @param idMessaggioOrigine L'ID del messaggio da cui avviare la conversazione.
+     * @param idIniziatore L'ID dell'utente che sta compiendo l'azione.
+     * @return Un {@code Optional<String>} che è:
+     *         <ul>
+     *           <li><b>vuoto</b> ({@code Optional.empty()}) se la chat è stata creata con successo.</li>
+     *           <li><b>contenente</b> il messaggio di errore ({@code Optional.of(errorMessage)}) se
+     *               la creazione è fallita (es. Chat con se stessi, messaggio non valido, ecc.).</li>
+     *         </ul>
      */
-    public boolean avviaNuovaChatPrivata(int idMessaggioOrigine, int idIniziatore) {
+    public Optional<String> avviaNuovaChatPrivata(int idMessaggioOrigine, int idIniziatore) {
         try {
             chatPrivataDAO.avviaChatPrivata(idMessaggioOrigine, idIniziatore);
-            return true;
+            return Optional.empty(); // Successo: restituisce un Optional vuoto
         } catch (SQLException e) {
-            // L'errore (es. chat con se stessi) viene loggato dal DAO.
-            // Possiamo anche recuperare il messaggio di errore per la View se vogliamo.
-            System.err.println("Errore SQL Controller: " + e.getMessage()); // Aggiungiamo un log per il debug
-            return false;
+            // Errore: restituisce un Optional contenente il messaggio di errore proveniente dal DB/SP
+            return Optional.of(e.getMessage());
         }
+    }
+
+    /**
+     * Recupera una pagina di messaggi da una chat privata.
+     *
+     * @param idChat L'ID della chat.
+     * @param idVisualizzatore L'ID dell'utente che effettua la richiesta.
+     * @param pagina Il numero di pagina desiderato.
+     * @return Una lista di {@link MessaggioDTO}.
+     */
+    public List<MessaggioDTO> getPaginaMessaggiChatPrivata(int idChat, int idVisualizzatore, int pagina) {
+        return messaggioDAO.getMessaggiChatPrivataPaginati(idChat, idVisualizzatore, MESSAGGI_PER_PAGINA, pagina);
+    }
+
+    public List<ChatPrivataDTO> getMieChatPrivate(int idUtente) {
+        return chatPrivataDAO.getChatDiUtente(idUtente);
     }
 }

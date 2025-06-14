@@ -1,7 +1,5 @@
 package com.chatmulticanale.model;
 
-import javax.management.relation.Role;
-
 public class Utente {
     private int idUtente;
     private String username;
