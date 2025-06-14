@@ -11,6 +11,8 @@ public class Messaggio {
     private int idMessaggioCitato;
     private int idUtenteMittente;
 
+    // --- GETTER E SETTER ---
+
     public int getIdMessaggio() {
         return idMessaggio;
     }

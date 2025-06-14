@@ -6,6 +6,8 @@ public class Progetto {
     private String descrizioneProgetto;
     private int idUtenteResponsabile;
 
+    // --- GETTER E SETTER ---
+
     public int getIdProgetto() {
         return idProgetto;
     }

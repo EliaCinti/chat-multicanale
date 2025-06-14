@@ -21,6 +21,10 @@ public class CanaleProgettoDAO {
 
     // --- Query Dirette ---
     private static final String SELECT_CANALI_DI_PROGETTO = "SELECT ID_Canale, Nome_Canale FROM CanaleProgetto WHERE Progetto = ?";
+    private static final String SELECT_CANALI_PARTECIPATI_DA_UTENTE =
+            "SELECT cp.ID_Canale, cp.Nome_Canale, cp.Descrizione_Canale " +
+                    "FROM CanaleProgetto cp JOIN PartecipaCanale pc ON cp.ID_Canale = pc.ID_Canale " +
+                    "WHERE pc.ID_Utente = ?";
 
     /**
      * Inserisce un nuovo canale nel database e aggiunge automaticamente il creatore come partecipante,
@@ -70,4 +74,30 @@ public class CanaleProgettoDAO {
         }
         return canali;
     }
+
+    /**
+     * Recupera la lista di tutti i canali a cui un utente partecipa.
+     *
+     * @param idUtente L'ID dell'utente.
+     * @return Una lista di oggetti CanaleProgetto.
+     */
+    public List<CanaleProgetto> getCanaliPartecipatiDaUtente(int idUtente) {
+        List<CanaleProgetto> canali = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_CANALI_PARTECIPATI_DA_UTENTE)) {
+            stmt.setInt(1, idUtente);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    CanaleProgetto canale = new CanaleProgetto();
+                    canale.setIdCanale(rs.getInt("ID_Canale"));
+                    canale.setNomeCanale(rs.getString("Nome_Canale"));
+                    canale.setDescrizioneCanale(rs.getString("Descrizione_Canale"));
+                    canali.add(canale);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero dei canali per l'utente ID: " + idUtente, e);
+        }
+        return canali;
+    }
+
 }

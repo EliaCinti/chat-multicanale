@@ -10,6 +10,8 @@ public class Utente {
     private String cognome;
     private Ruolo ruolo;
 
+    // --- GETTER E SETTER ---
+
     public int getIdUtente() {
         return idUtente;
     }

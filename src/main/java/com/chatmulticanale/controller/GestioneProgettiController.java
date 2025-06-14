@@ -1,9 +1,7 @@
 package com.chatmulticanale.controller;
 
-import com.chatmulticanale.dao.CanaleProgettoDAO;
-import com.chatmulticanale.dao.PartecipaCanaleDAO;
-import com.chatmulticanale.dao.ProgettoDAO;
-import com.chatmulticanale.dao.UtenteDAO;
+import com.chatmulticanale.dao.*;
+import com.chatmulticanale.dto.ChatSupervisioneDTO;
 import com.chatmulticanale.model.CanaleProgetto;
 import com.chatmulticanale.model.Progetto;
 import com.chatmulticanale.model.Utente;
@@ -17,6 +15,7 @@ public class GestioneProgettiController {
     private final CanaleProgettoDAO canaleDAO = new CanaleProgettoDAO();
     private final UtenteDAO utenteDAO = new UtenteDAO();
     private final PartecipaCanaleDAO partecipaDAO = new PartecipaCanaleDAO();
+    private final ChatPrivataDAO chatPrivataDAO = new ChatPrivataDAO();
 
     /**
      * Recupera la lista dei progetti di cui un Capo Progetto specifico è responsabile.
@@ -66,5 +65,35 @@ public class GestioneProgettiController {
             return false;
         }
     }
-    // Aggiungeremo qui altri metodi per creare canali, aggiungere utenti, etc.
+
+    public List<Utente> getDipendentiDelCanale(int idCanale) {
+        return utenteDAO.getDipendentiInCanale(idCanale);
+    }
+
+    public boolean rimuoviDipendenteDaCanale(int idCanale, int idUtente) {
+        try {
+            partecipaDAO.rimuoviUtenteDaCanale(idCanale, idUtente);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Recupera le chat private di un progetto per la supervisione.
+     *
+     * @param idProgetto L'ID del progetto.
+     * @param idCapoProgetto L'ID dell'utente che richiede la supervisione.
+     * @return Una lista di {@link ChatSupervisioneDTO} o null in caso di errore di autorizzazione/DB.
+     */
+    public List<ChatSupervisioneDTO> getChatPrivateDaSupervisionare(int idProgetto, int idCapoProgetto) {
+        try {
+            return chatPrivataDAO.getChatDaSupervisionare(idProgetto, idCapoProgetto);
+        } catch (SQLException e) {
+            // Se il DAO lancia un'eccezione (es. Per permessi negati dalla SP),
+            // il controller restituisce null per segnalare l'errore alla View.
+            return null;
+        }
+    }
 }
+

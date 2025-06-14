@@ -12,7 +12,7 @@ public class ProgettoResponsabileDTO {
     private String cognomeResponsabile;
     private int idResponsabile;
 
-
+    // --- GETTER E SETTER ---
 
     public int getIdProgetto() {
         return idProgetto;

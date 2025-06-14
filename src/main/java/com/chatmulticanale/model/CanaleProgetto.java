@@ -10,6 +10,8 @@ public class CanaleProgetto {
     private int idUtenteCreatore;
     private int idProgetto;
 
+    // --- GETTER E SETTER ---
+
     public int getIdCanale() {
         return idCanale;
     }

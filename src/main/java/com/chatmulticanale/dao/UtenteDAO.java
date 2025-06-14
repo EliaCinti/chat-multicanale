@@ -30,6 +30,10 @@ public class UtenteDAO {
             "SELECT ID_Utente, Nome_Utente, Cognome_Utente " +
                     "FROM Utente " +
                     "WHERE Ruolo = 'Dipendente' AND ID_Utente NOT IN (SELECT ID_Utente FROM PartecipaCanale WHERE ID_Canale = ?)";
+    private static final String SELECT_DIPENDENTI_IN_CANALE =
+            "SELECT u.ID_Utente, u.Nome_Utente, u.Cognome_Utente " +
+                    "FROM Utente u JOIN PartecipaCanale pc ON u.ID_Utente = pc.ID_Utente " +
+                    "WHERE pc.ID_Canale = ? AND u.Ruolo = 'Dipendente'";
 
     /**
      * Inserisce un nuovo utente nel database usando un comando INSERT diretto,
@@ -192,6 +196,32 @@ public class UtenteDAO {
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore durante il recupero dei dipendenti non nel canale ID: " + idCanale, e);
+        }
+        return dipendenti;
+    }
+
+    /**
+     * Recupera una lista di tutti gli utenti con ruolo 'Dipendente' che sono
+     * membri di un canale specifico.
+     *
+     * @param idCanale L'ID del canale di cui elencare i membri.
+     * @return Una lista di oggetti Utente presenti nel canale.
+     */
+    public List<Utente> getDipendentiInCanale(int idCanale) {
+        List<Utente> dipendenti = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_DIPENDENTI_IN_CANALE)) {
+            stmt.setInt(1, idCanale);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Utente utente = new Utente();
+                    utente.setIdUtente(rs.getInt("ID_Utente"));
+                    utente.setNome(rs.getString("Nome_Utente"));
+                    utente.setCognome(rs.getString("Cognome_Utente"));
+                    dipendenti.add(utente);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante il recupero dei dipendenti nel canale ID: " + idCanale, e);
         }
         return dipendenti;
     }

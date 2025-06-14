@@ -9,6 +9,8 @@ public class ChatPrivata {
     private int idUtentePartecipante;
     private int idMessaggioOrigineChat;
 
+    // --- GETTER E SETTER ---
+
     public int getIdChat() {
         return idChat;
     }
