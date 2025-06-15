@@ -17,6 +17,7 @@ public class InterazioneUtenteController {
     private final CanaleProgettoDAO canaleDAO = new CanaleProgettoDAO();
     private final ChatPrivataDAO chatPrivataDAO = new ChatPrivataDAO();
 
+
     public static final int MESSAGGI_PER_PAGINA = 10;
 
     /**

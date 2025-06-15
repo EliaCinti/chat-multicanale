@@ -36,7 +36,6 @@ public class AmministrazioneController {
             utenteDAO.assegnaRuoloCapoProgetto(idUtente);
             return true;
         } catch (Exception e) {
-            // Se il DAO lancia un'eccezione, la promozione è fallita.
             return false;
         }
     }
@@ -58,21 +57,6 @@ public class AmministrazioneController {
      */
     public List<Progetto> getProgettiDiUnResponsabile(int idResponsabile) {
         return progettoDAO.trovaProgettiPerResponsabile(idResponsabile);
-    }
-
-    /**
-     * Tenta di riassegnare un progetto a un nuovo responsabile.
-     * @param idProgetto L'ID del progetto.
-     * @param idNuovoResponsabile L'ID del nuovo capo.
-     * @return true se ha successo, false altrimenti.
-     */
-    public boolean riassegnaProgetto(int idProgetto, int idNuovoResponsabile) {
-        try {
-            progettoDAO.aggiornaResponsabileProgetto(idProgetto, idNuovoResponsabile);
-            return true;
-        } catch (SQLException e) {
-            return false;
-        }
     }
 
     /**
@@ -103,15 +87,20 @@ public class AmministrazioneController {
     }
 
     /**
-     * Esegue la logica di business per assegnare un progetto a un Capo Progetto.
-     * Riutilizza la logica di riassegnazione sottostante.
+     * Esegue la logica di business per assegnare un progetto a un Capo Progetto per la prima volta.
+     * Chiama il metodo DAO che invoca la Stored Procedure sp_AM3.
+     *
      * @param idProgetto L'ID del progetto da assegnare.
      * @param idCapoProgetto L'ID del Capo Progetto a cui assegnarlo.
      * @return true se l'operazione ha successo, false altrimenti.
      */
     public boolean assegnaProgetto(int idProgetto, int idCapoProgetto) {
-        // Riutilizziamo il metodo "riassegnaProgetto" perché l'azione finale sul DB è la stessa!
-        return riassegnaProgetto(idProgetto, idCapoProgetto);
+        try {
+            progettoDAO.assegnaResponsabilitaProgetto(idProgetto, idCapoProgetto);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     // --- METODI PER AM4 (RIASSEGNA RESPONSABILITA PROGETTO)---
@@ -122,6 +111,21 @@ public class AmministrazioneController {
      */
     public List<ProgettoResponsabileDTO> getListaProgettiConResponsabile() {
         return progettoDAO.getProgettiConResponsabile();
+    }
+
+    /**
+     * Tenta di riassegnare un progetto a un nuovo responsabile.
+     * @param idProgetto L'ID del progetto.
+     * @param idNuovoResponsabile L'ID del nuovo capo.
+     * @return true se ha successo, false altrimenti.
+     */
+    public boolean riassegnaProgetto(int idProgetto, int idNuovoResponsabile) {
+        try {
+            progettoDAO.aggiornaResponsabileProgetto(idProgetto, idNuovoResponsabile);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     // --- METODI PER AGGIUNGERE UN PROGETTO ---

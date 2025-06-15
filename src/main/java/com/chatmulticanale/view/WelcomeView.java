@@ -36,7 +36,7 @@ public class WelcomeView implements View {
             ViewUtils.println("1. Login");
             ViewUtils.println("2. Registrati (come Dipendente)");
             ViewUtils.println("0. Esci dall'applicazione");
-            int scelta = InputUtils.readInt("Scelta: ");
+            int scelta = InputUtils.readIntInRange("Scelta: ", 0, 2);
 
             switch (scelta) {
                 case 1:
@@ -47,9 +47,6 @@ public class WelcomeView implements View {
                     return Navigazione.vaiA(new SignUpView(this.signUpController));
                 case 0:
                     return Navigazione.exit();
-                default:
-                    ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
             }
         }
     }

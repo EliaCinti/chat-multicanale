@@ -27,8 +27,6 @@ public class ChatView {
         this.idUtenteLoggato = idUtenteLoggato;
     }
 
-// In ChatView.java
-
     public void show() {
         int paginaCorrente = 1;
 
@@ -111,6 +109,8 @@ public class ChatView {
                         }
                         break;
                     default:
+                        ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Comando non riconosciuto." + ColorUtils.ANSI_RESET);
+                        InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
                         break; // Ignora input non validi
                 }
             } catch (CommandException e) {
@@ -133,7 +133,7 @@ public class ChatView {
 
         String contenuto = InputUtils.askForInput(prompt);
 
-        boolean successo = false;
+        boolean successo;
         if (tipoContesto == TipoContestoChat.CANALE_PROGETTO) {
             if (idMessaggioCitato == null) {
                 successo = controller.inviaMessaggioCanale(this.idContesto, this.idUtenteLoggato, contenuto);
@@ -171,20 +171,21 @@ public class ChatView {
         try {
             int idDaCitare = InputUtils.readInt("Inserisci l'ID del messaggio da citare: ");
 
-            // Validazione: controlla se l'ID inserito è tra quelli visibili a schermo
-            boolean idValido = messaggiVisibili.stream().anyMatch(m -> m.getIdMessaggio() == idDaCitare);
+            // Validazione manuale: controlla se l'ID inserito è presente nella lista.
+            boolean idValido = messaggiVisibili.stream()
+                    .anyMatch(m -> m.getIdMessaggio() == idDaCitare);
 
             if (idValido) {
+                // Se l'ID è valido, procediamo con l'invio del messaggio di risposta.
                 handleInviaMessaggio(idDaCitare);
             } else {
+                // Se l'ID non è nella lista, informiamo l'utente.
                 ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Puoi citare solo i messaggi presenti in questa pagina." + ColorUtils.ANSI_RESET);
                 InputUtils.pressEnterToContinue("");
             }
         } catch (CommandException e) {
+            // Gestisce il caso in cui l'utente digiti /b o /back.
             ViewUtils.println("Citazione annullata.");
-            InputUtils.pressEnterToContinue("");
-        } catch (NumberFormatException e) {
-            ViewUtils.println(ColorUtils.ANSI_RED + "Per favore, inserisci un ID numerico." + ColorUtils.ANSI_RESET);
             InputUtils.pressEnterToContinue("");
         }
     }
@@ -205,32 +206,28 @@ public class ChatView {
         try {
             int idMessaggioOrigine = InputUtils.readInt("Inserisci l'ID del messaggio da cui avviare la chat privata: ");
 
-            // Validazione: l'utente può avviare una chat solo da un messaggio che vede
-            boolean idValido = messaggiVisibili.stream().anyMatch(m -> m.getIdMessaggio() == idMessaggioOrigine);
+            // Validazione: l'utente può avviare una chat solo da un messaggio che vede.
+            boolean idValido = messaggiVisibili.stream()
+                    .anyMatch(m -> m.getIdMessaggio() == idMessaggioOrigine);
 
             if (idValido) {
-                // --- INIZIO MODIFICA ---
-                // Il metodo ora restituisce un Optional<String>
                 java.util.Optional<String> errorOptional = controller.avviaNuovaChatPrivata(idMessaggioOrigine, this.idUtenteLoggato);
 
-                if (errorOptional.isEmpty()) { // .isEmpty() significa successo!
+                if (errorOptional.isEmpty()) { // Successo
                     ViewUtils.println(ColorUtils.ANSI_GREEN + "\nChat privata avviata con successo!" + ColorUtils.ANSI_RESET);
                     ViewUtils.println("Ora puoi accedervi dalla sezione 'Chat Private' nella home.");
-                } else { // Se l'Optional contiene qualcosa, è il messaggio di errore
+                } else { // Errore
                     ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile avviare la chat." + ColorUtils.ANSI_RESET);
                     ViewUtils.println(ColorUtils.ANSI_RED + "Motivo: " + errorOptional.get() + ColorUtils.ANSI_RESET);
                 }
-                // --- FINE MODIFICA ---
             } else {
                 ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Puoi avviare una chat solo da un messaggio presente in questa pagina." + ColorUtils.ANSI_RESET);
             }
             InputUtils.pressEnterToContinue("");
 
         } catch (CommandException e) {
+            // Gestisce solo l'annullamento tramite /b o /back.
             ViewUtils.println("Operazione annullata.");
-            InputUtils.pressEnterToContinue("");
-        } catch (NumberFormatException e) {
-            ViewUtils.println(ColorUtils.ANSI_RED + "Per favore, inserisci un ID numerico." + ColorUtils.ANSI_RESET);
             InputUtils.pressEnterToContinue("");
         }
     }

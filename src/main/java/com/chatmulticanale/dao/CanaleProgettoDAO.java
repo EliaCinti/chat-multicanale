@@ -1,4 +1,3 @@
-// src/main/java/com/chatmulticanale/dao/CanaleProgettoDAO.java
 package com.chatmulticanale.dao;
 
 import com.chatmulticanale.model.CanaleProgetto;
@@ -18,13 +17,11 @@ public class CanaleProgettoDAO {
 
     // --- Stored Procedures ---
     private static final String SP_CREA_CANALE = "{CALL sp_CP1_CreaCanaleProgetto(?, ?, ?, ?)}";
+    private static final String SP_GET_CANALI_PARTECIPATI = "{CALL sp_UT6_VisualizzaElencoCanaliPartecipati(?)}";
 
     // --- Query Dirette ---
     private static final String SELECT_CANALI_DI_PROGETTO = "SELECT ID_Canale, Nome_Canale FROM CanaleProgetto WHERE Progetto = ?";
-    private static final String SELECT_CANALI_PARTECIPATI_DA_UTENTE =
-            "SELECT cp.ID_Canale, cp.Nome_Canale, cp.Descrizione_Canale " +
-                    "FROM CanaleProgetto cp JOIN PartecipaCanale pc ON cp.ID_Canale = pc.ID_Canale " +
-                    "WHERE pc.ID_Utente = ?";
+
 
     /**
      * Inserisce un nuovo canale nel database e aggiunge automaticamente il creatore come partecipante,
@@ -77,13 +74,14 @@ public class CanaleProgettoDAO {
 
     /**
      * Recupera la lista di tutti i canali a cui un utente partecipa.
+     * Utilizza la Stored Procedure sp_UT6.
      *
      * @param idUtente L'ID dell'utente.
      * @return Una lista di oggetti CanaleProgetto.
      */
     public List<CanaleProgetto> getCanaliPartecipatiDaUtente(int idUtente) {
         List<CanaleProgetto> canali = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_CANALI_PARTECIPATI_DA_UTENTE)) {
+        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_GET_CANALI_PARTECIPATI)) {
             stmt.setInt(1, idUtente);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -91,6 +89,7 @@ public class CanaleProgettoDAO {
                     canale.setIdCanale(rs.getInt("ID_Canale"));
                     canale.setNomeCanale(rs.getString("Nome_Canale"));
                     canale.setDescrizioneCanale(rs.getString("Descrizione_Canale"));
+                    canale.setIdProgetto(rs.getInt("ID_Progetto"));
                     canali.add(canale);
                 }
             }
@@ -99,5 +98,4 @@ public class CanaleProgettoDAO {
         }
         return canali;
     }
-
 }

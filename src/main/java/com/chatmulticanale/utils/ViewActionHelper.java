@@ -25,7 +25,7 @@ public class ViewActionHelper {
     public static void avviaChatPrivataDaListaMessaggi(List<MessaggioDTO> messaggiVisibili, int idUtenteLoggato, InterazioneUtenteController controller) throws CommandException {
         if (messaggiVisibili.isEmpty()) {
             ViewUtils.println(ColorUtils.ANSI_YELLOW + "Non ci sono messaggi in questa pagina da cui partire." + ColorUtils.ANSI_RESET);
-            InputUtils.pressEnterToContinue("");
+            InputUtils.pressEnterToContinue("Premi Invio per continuare...");
             return;
         }
 

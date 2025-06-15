@@ -14,6 +14,7 @@ public class ProgettoDAO {
 
     // --- Stored Procedures ---
     private static final String SP_RIASSEGNA_RESPONSABILITA_PROGETTI = "{CALL sp_AM4_RiassegnaResponsabilitaProgetto(?, ?)}";
+    private static final String SP_ASSEGNA_RESPONSABILITA_PROGETTO = "{CALL sp_AM3_AssegnaResponsabilitaProgetto(?, ?)}";
 
     // --- Query Dirette ---
     private static final String SELECT_PROGETTI_RESPONSABILE_QUERY = "SELECT ID_Progetto, Nome_Progetto FROM Progetto WHERE Utente_Responsabile = ?";
@@ -67,6 +68,25 @@ public class ProgettoDAO {
             logger.log(Level.SEVERE, "Errore nel trovare i progetti per il responsabile ID: " + idResponsabile, e);
         }
         return progetti;
+    }
+
+    /**
+     * Assegna per la prima volta un responsabile a un progetto.
+     * Utilizza la Stored Procedure sp_AM3.
+     *
+     * @param idProgetto L'ID del progetto da assegnare.
+     * @param idCapoProgetto L'ID del Capo Progetto a cui assegnarlo.
+     * @throws SQLException in caso di errore.
+     */
+    public void assegnaResponsabilitaProgetto(int idProgetto, int idCapoProgetto) throws SQLException {
+        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_ASSEGNA_RESPONSABILITA_PROGETTO)) {
+            stmt.setInt(1, idProgetto);
+            stmt.setInt(2, idCapoProgetto);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore durante l'assegnazione del progetto ID: " + idProgetto + " al responsabile ID: " + idCapoProgetto, e);
+            throw e;
+        }
     }
 
     public void aggiornaResponsabileProgetto(int idProgetto, int idNuovoResponsabile) throws SQLException {

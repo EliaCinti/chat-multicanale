@@ -36,7 +36,7 @@ public class AmministrazioneView implements View {
             ViewUtils.println("0. Logout");
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readInt("Seleziona un'opzione: ");
+            int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 0, 5);
             switch (scelta) {
                 case 1:
                     handlePromuoviUtente();
@@ -56,14 +56,9 @@ public class AmministrazioneView implements View {
                 case 0:
                     SessionManager.getInstance().logout();
                     return Navigazione.logout();
-                default:
-                    ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida. Riprova." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
             }
         }
     }
-
-    // Sostituisci il vecchio metodo handlePromuoviUtente con questo in AmministrazioneView.java
 
     private void handlePromuoviUtente() {
         ViewUtils.clearScreen();
@@ -87,7 +82,6 @@ public class AmministrazioneView implements View {
                 }
                 ViewUtils.printSeparator();
 
-                // --- HELPER DI VALIDAZIONE ---
                 int idUtenteDaPromuovere = InputHelper.chiediIdValido("Inserisci l'ID dell'utente da promuovere: ", dipendenti);
 
                 // Adesso siamo sicuri al 100% che 'idUtenteDaPromuovere' è un ID valido e presente nella lista.
@@ -95,7 +89,6 @@ public class AmministrazioneView implements View {
                 if (successo) {
                     ViewUtils.println(ColorUtils.ANSI_GREEN + "\nUtente promosso con successo!" + ColorUtils.ANSI_RESET);
                 } else {
-                    // Questo ramo ora indica un errore imprevisto a livello di DAO/DB, non un input sbagliato.
                     ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile promuovere l'utente. Controllare i log." + ColorUtils.ANSI_RESET);
                 }
 
@@ -104,9 +97,7 @@ public class AmministrazioneView implements View {
                 ViewUtils.println("\nOperazione annullata.");
             }
         }
-
-        // La pausa finale rimane per dare tempo di leggere l'esito.
-        InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
     }
 
     /**
@@ -116,7 +107,6 @@ public class AmministrazioneView implements View {
     private void handleDegradaCapoProgetto() {
         ViewUtils.clearScreen();
         ViewUtils.println(ColorUtils.ANSI_BOLD + "--- RIMUOVI RUOLO CAPO PROGETTO (Procedura Guidata) ---" + ColorUtils.ANSI_RESET);
-        // Uniformiamo il messaggio di annullamento
         ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
         ViewUtils.printSeparator();
 
@@ -134,16 +124,8 @@ public class AmministrazioneView implements View {
             capiProgetto.forEach(u -> ViewUtils.println(String.format("ID: %-5d | Nome: %-15s | Cognome: %s", u.getIdUtente(), u.getNome(), u.getCognome())));
             ViewUtils.printSeparator();
 
-            // --- USA L'HELPER DI VALIDAZIONE ---
-            // Sostituiamo la vecchia logica di input con il nostro metodo robusto.
             int idDaDegradare = InputHelper.chiediIdValido("Inserisci l'ID del Capo Progetto da degradare: ", capiProgetto);
 
-            // La vecchia logica `if (idDaDegradare == 0) return;` non è più necessaria,
-            // perché l'annullamento è gestito dal comando /b o /back tramite CommandException.
-
-            // 2. Controlla se ci sono altri Capi Progetto disponibili per la riassegnazione
-            // Il codice da qui in poi rimane quasi identico, ma ora abbiamo la certezza
-            // che 'idDaDegradare' è un ID valido.
             final int finalIdDaDegradare = idDaDegradare; // Necessario per la lambda
             List<Utente> altriCapi = capiProgetto.stream()
                     .filter(cp -> cp.getIdUtente() != finalIdDaDegradare)
@@ -168,8 +150,6 @@ public class AmministrazioneView implements View {
                     ViewUtils.println("\nCapi Progetto disponibili per la riassegnazione:");
                     altriCapi.forEach(u -> ViewUtils.println(String.format("ID: %-5d | Nome: %-15s", u.getIdUtente(), u.getNome())));
 
-                    // --- USA L'HELPER DI VALIDAZIONE ANCHE QUI ---
-                    // Rendiamo robusta anche la selezione del nuovo responsabile
                     int idNuovoResponsabile = InputHelper.chiediIdValido("\nInserisci l'ID del nuovo responsabile per questo progetto: ", altriCapi);
 
                     if (adminController.riassegnaProgetto(progetto.getIdProgetto(), idNuovoResponsabile)) {
@@ -197,9 +177,7 @@ public class AmministrazioneView implements View {
             // Se l'utente digita /b o /back in qualsiasi momento, l'operazione viene annullata.
             ViewUtils.println("\nOperazione annullata.");
         }
-
-        // Il pressEnter finale rimane per dare tempo di leggere l'esito.
-        InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
     }
 
     /**
@@ -222,13 +200,10 @@ public class AmministrazioneView implements View {
                 ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile creare il progetto. Il nome potrebbe essere già esistente." + ColorUtils.ANSI_RESET);
             }
         } catch (CommandException e) {
-            // Se l'utente digita un comando, l'eccezione viene gestita qui
-            // e semplicemente si torna al menu precedente, perché il NavigationManager
-            // non viene coinvolto. Mostriamo un feedback.
             ViewUtils.println("\nOperazione annullata.");
         }
 
-        InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
     }
 
     /**
@@ -261,7 +236,6 @@ public class AmministrazioneView implements View {
             ViewUtils.println("Lista dei Progetti non assegnati:");
             progetti.forEach(p -> ViewUtils.println(String.format("ID: %-5d | Nome: %s", p.getIdProgetto(), p.getNomeProgetto())));
             ViewUtils.printSeparator();
-            // --- USA L'HELPER DI VALIDAZIONE ---
             int idProgetto = InputHelper.chiediIdValido("Inserisci l'ID del progetto da assegnare: ", progetti);
 
 
@@ -269,7 +243,6 @@ public class AmministrazioneView implements View {
             ViewUtils.println("\nLista dei Capi Progetto disponibili:");
             capiProgetto.forEach(cp -> ViewUtils.println(String.format("ID: %-5d | Nome: %s %s", cp.getIdUtente(), cp.getNome(), cp.getCognome())));
             ViewUtils.printSeparator();
-            // --- USA L'HELPER DI VALIDAZIONE ---
             int idCapo = InputHelper.chiediIdValido("Inserisci l'ID del Capo Progetto a cui assegnare il progetto: ", capiProgetto);
 
             // 4. Esegue l'azione solo dopo aver ricevuto input validati
@@ -283,10 +256,8 @@ public class AmministrazioneView implements View {
             ViewUtils.println("\nOperazione annullata.");
         }
 
-        InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
     }
-
-    // In AmministrazioneView.java
 
     /**
      * Gestisce il flusso guidato per riassegnare un progetto da un Capo Progetto a un altro (AM4).
@@ -362,6 +333,6 @@ public class AmministrazioneView implements View {
             ViewUtils.println("\nOperazione annullata.");
         }
 
-        InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
     }
 }

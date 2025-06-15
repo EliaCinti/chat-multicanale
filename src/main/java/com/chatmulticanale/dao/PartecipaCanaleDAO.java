@@ -1,4 +1,3 @@
-// src/main/java/com/chatmulticanale/dao/PartecipaCanaleDAO.java
 package com.chatmulticanale.dao;
 
 import com.chatmulticanale.utils.DatabaseConnector;

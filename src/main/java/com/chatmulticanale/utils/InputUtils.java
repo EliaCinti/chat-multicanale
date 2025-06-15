@@ -89,6 +89,32 @@ public class InputUtils {
         scanner.nextLine();      // Legge semplicemente la riga, qualsiasi essa sia, e la ignora.
     }
 
+    /**
+     * Legge un numero intero dall'utente, assicurandosi che sia all'interno
+     * di un range specifico (inclusi gli estremi).
+     * Gestisce input non numerici e comandi di navigazione.
+     *
+     * @param prompt Il messaggio da mostrare.
+     * @param min Il valore minimo accettabile.
+     * @param max Il valore massimo accettabile.
+     * @return L'intero valido inserito dall'utente.
+     * @throws CommandException se l'utente inserisce un comando.
+     */
+    public static int readIntInRange(String prompt, int min, int max) throws CommandException {
+        while (true) {
+            // Chiamiamo il nostro readInt() base per ottenere un numero
+            int numero = readInt(prompt);
+
+            // Aggiungiamo il controllo sul range
+            if (numero >= min && numero <= max) {
+                return numero; // Il numero è valido, lo restituiamo
+            } else {
+                // Se il numero è fuori range, mostriamo un errore e il loop continua
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: La scelta deve essere compresa tra " + min + " e " + max + "." + ColorUtils.ANSI_RESET);
+            }
+        }
+    }
+
     // Metodo per chiudere lo scanner quando l'applicazione termina.
     public static void closeScanner() {
         scanner.close();

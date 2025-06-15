@@ -368,7 +368,7 @@ DELIMITER ;
 
 DELIMITER $$
 USE `mydb`$$
-CREATE PROCEDURE `sp_UT2_VisualizzaMessaggiCanale` (IN p_ID_Canale INT, IN p_ID_Utente_Visualizzatore INT, IN p_Numero_Pagina INT, IN p_Dimensione_Pagina INT)
+CREATE PROCEDURE `sp_UT2_VisualizzaMessaggiCanale` (IN p_ID_Canale INT, IN p_ID_UtenteVisualizzatore INT, IN p_Numero_Pagina INT, IN p_Dimensione_Pagina INT)
 BEGIN
 	-- Calcola l'offset necessario per la paginazione.
 	-- L'offset determina quante righe saltare prima di iniziare a recuperare i risultati.
@@ -407,7 +407,7 @@ BEGIN
 	WHERE
 		M.Canale_Rif = p_ID_Canale -- Filtra i messaggi per il canale specificato
 	ORDER BY
-		M.Timestamp ASC            -- Ordina i messaggi dal più vecchio al più recente per la paginazione sequenziale
+		M.Timestamp            -- Ordina i messaggi dal più vecchio al più recente per la paginazione sequenziale
 	LIMIT p_Dimensione_Pagina      -- Limita il numero di risultati alla dimensione della pagina
 	OFFSET v_Offset;               -- Salta le righe delle pagine precedenti
 END$$
@@ -475,7 +475,7 @@ DELIMITER ;
 
 DELIMITER $$
 USE `mydb`$$
-CREATE PROCEDURE `sp_UT5_VisualizzaMessaggiChatPrivata` (IN p_ID_Chat INT, IN p_ID_Utente_Visualizzatore INT, IN p_Numero_Pagina INT, IN p_Dimensione_Pagina INT)
+CREATE PROCEDURE `sp_UT5_VisualizzaMessaggiChatPrivata` (IN p_ID_Chat INT, IN p_ID_UtenteVisualizzatore INT, IN p_Numero_Pagina INT, IN p_Dimensione_Pagina INT)
 BEGIN
 	-- Calcola l'offset necessario per la paginazione.
     -- Questo garantisce che vengano recuperate solo le righe pertinenti alla pagina richiesta.
@@ -513,7 +513,7 @@ BEGIN
     WHERE
         M.Chat_Rif = p_ID_Chat      -- Filtra i messaggi per la chat privata specificata
     ORDER BY
-        M.Timestamp ASC            -- Ordina i messaggi dal più vecchio al più recente per la paginazione sequenziale
+        M.Timestamp            -- Ordina i messaggi dal più vecchio al più recente per la paginazione sequenziale
     LIMIT p_Dimensione_Pagina      -- Limita il numero di risultati alla dimensione della pagina
     OFFSET v_Offset;               -- Salta le righe delle pagine precedenti
 END$$
