@@ -15,6 +15,10 @@ import java.util.logging.Logger; // <-- 1. IMPORTA IL LOGGER
  */
 public class DatabaseConnector {
 
+    private DatabaseConnector() {
+        // costruttore privato
+    }
+
     private static final Logger logger = Logger.getLogger(DatabaseConnector.class.getName());
 
     private static Connection conn = null;

@@ -1,12 +1,13 @@
 package com.chatmulticanale.dao;
 
+import com.chatmulticanale.dao.costanti.CostantiCanaleProgettoDAO;
+import com.chatmulticanale.dao.costanti.CostantiProgettoDAO;
 import com.chatmulticanale.model.CanaleProgetto;
 import com.chatmulticanale.utils.DatabaseConnector;
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,14 +15,6 @@ import java.util.logging.Logger;
 public class CanaleProgettoDAO {
 
     private static final Logger logger = Logger.getLogger(CanaleProgettoDAO.class.getName());
-
-    // --- Stored Procedures ---
-    private static final String SP_CREA_CANALE = "{CALL sp_CP1_CreaCanaleProgetto(?, ?, ?, ?)}";
-    private static final String SP_GET_CANALI_PARTECIPATI = "{CALL sp_UT6_VisualizzaElencoCanaliPartecipati(?)}";
-
-    // --- Query Dirette ---
-    private static final String SELECT_CANALI_DI_PROGETTO = "SELECT ID_Canale, Nome_Canale FROM CanaleProgetto WHERE Progetto = ?";
-
 
     /**
      * Inserisce un nuovo canale nel database e aggiunge automaticamente il creatore come partecipante,
@@ -34,7 +27,13 @@ public class CanaleProgettoDAO {
      * @throws SQLException se si verifica un errore durante l'esecuzione della Stored Procedure.
      */
     public void creaNuovoCanale(CanaleProgetto nuovoCanale, int idProgetto, int idUtenteCreatore) throws SQLException {
-        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_CREA_CANALE)) {
+        Connection conn = DatabaseConnector.getConnection();
+        if (conn == null) {
+            logger.log(Level.SEVERE, "Impossibile eseguire creaNuovoCanale perchè la connessione al database è assente.");
+            return;
+        }
+
+        try (CallableStatement stmt = conn.prepareCall(CostantiCanaleProgettoDAO.SP_CREA_CANALE)) {
             // I parametri sono: p_Nome_Canale, p_Descrizione_Canale, p_ID_Progetto, p_ID_Utente_Creatore
             stmt.setString(1, nuovoCanale.getNomeCanale());
             stmt.setString(2, nuovoCanale.getDescrizioneCanale());
@@ -43,8 +42,7 @@ public class CanaleProgettoDAO {
 
             stmt.executeUpdate();
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante la creazione del canale '" + nuovoCanale.getNomeCanale() + "' per il progetto ID: " + idProgetto, e);
-            throw e; // Rilancia l'eccezione per notificare il controller
+            throw new SQLException("Impossibile creare il canale '" + nuovoCanale.getNomeCanale() + "' per il progetto ID: " + idProgetto, e);
         }
     }
 
@@ -55,20 +53,25 @@ public class CanaleProgettoDAO {
      * @return Una lista di oggetti CanaleProgetto (potenzialmente vuota).
      */
     public List<CanaleProgetto> getCanaliPerProgetto(int idProgetto) {
+        Connection conn = DatabaseConnector.getConnection();
+        if (conn == null) {
+            logger.log(Level.SEVERE, "Impossibile eseguire getCanaliPerProgetto perchè la connessione al database è assente.");
+            return Collections.emptyList();
+        }
+
         List<CanaleProgetto> canali = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnector.getConnection().prepareStatement(SELECT_CANALI_DI_PROGETTO)) {
+        try (PreparedStatement stmt = conn.prepareStatement(CostantiCanaleProgettoDAO.SELECT_CANALI_DI_PROGETTO)) {
             stmt.setInt(1, idProgetto);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     CanaleProgetto canale = new CanaleProgetto();
-                    canale.setIdCanale(rs.getInt("ID_Canale"));
-                    canale.setNomeCanale(rs.getString("Nome_Canale"));
+                    canale.setIdCanale(rs.getInt(CostantiCanaleProgettoDAO.ID_CANALE));
+                    canale.setNomeCanale(rs.getString(CostantiCanaleProgettoDAO.NOME_CANALE));
                     canali.add(canale);
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante il recupero dei canali per il progetto ID: " + idProgetto, e);
-        }
+            logger.log(Level.SEVERE, e, () -> "Errore durante il recupero dei canali per il progetto ID: " + idProgetto);        }
         return canali;
     }
 
@@ -80,21 +83,27 @@ public class CanaleProgettoDAO {
      * @return Una lista di oggetti CanaleProgetto.
      */
     public List<CanaleProgetto> getCanaliPartecipatiDaUtente(int idUtente) {
+        Connection conn = DatabaseConnector.getConnection();
+        if (conn == null) {
+            logger.log(Level.SEVERE, "Impossibile eseguire getCanaliPartecipatiDaUtente perchè la connessione al database è assente.");
+            return Collections.emptyList();
+        }
+
         List<CanaleProgetto> canali = new ArrayList<>();
-        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_GET_CANALI_PARTECIPATI)) {
+        try (CallableStatement stmt = conn.prepareCall(CostantiCanaleProgettoDAO.SP_GET_CANALI_PARTECIPATI)) {
             stmt.setInt(1, idUtente);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     CanaleProgetto canale = new CanaleProgetto();
-                    canale.setIdCanale(rs.getInt("ID_Canale"));
-                    canale.setNomeCanale(rs.getString("Nome_Canale"));
-                    canale.setDescrizioneCanale(rs.getString("Descrizione_Canale"));
-                    canale.setIdProgetto(rs.getInt("ID_Progetto"));
+                    canale.setIdCanale(rs.getInt(CostantiCanaleProgettoDAO.ID_CANALE));
+                    canale.setNomeCanale(rs.getString(CostantiCanaleProgettoDAO.NOME_CANALE));
+                    canale.setDescrizioneCanale(rs.getString(CostantiCanaleProgettoDAO.DESCRIZIONE_CANALE));
+                    canale.setIdProgetto(rs.getInt(CostantiProgettoDAO.ID_PROGETTO));
                     canali.add(canale);
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante il recupero dei canali per l'utente ID: " + idUtente, e);
+            logger.log(Level.SEVERE, e, () -> "Errore durante il recupero dei canali per l'utente ID: " + idUtente);
         }
         return canali;
     }

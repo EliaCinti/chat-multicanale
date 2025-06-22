@@ -11,6 +11,10 @@ import java.util.List;
 
 public class InputHelper {
 
+    private InputHelper() {
+        // costruttore privato
+    }
+
     /**
      * Metodo helper generico e riutilizzabile per chiedere all'utente di selezionare un ID valido da una lista.
      * Gestisce la validazione dell'input, i comandi di navigazione e i messaggi di errore.

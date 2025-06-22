@@ -9,6 +9,7 @@ import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.ColorUtils;
 import com.chatmulticanale.utils.InputUtils;
 import com.chatmulticanale.utils.ViewUtils;
+import com.chatmulticanale.view.costanti_view.CostantiView;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 
@@ -23,25 +24,25 @@ public class LoginView implements View {
     public Navigazione show() {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- LOGIN ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Digita '/b' o '/back' per tornare indietro.");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.LOGIN + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.B_O_BACK_2);
             ViewUtils.printSeparator();
 
             try {
                 // si username e password
-                String username = InputUtils.askForInput("Username: ");
-                String password = InputUtils.askForInput("Password: ");
+                String username = InputUtils.askForInput(CostantiView.USERNAME);
+                String password = InputUtils.askForInput(CostantiView.PASSWORD);
 
                 Utente utenteAutenticato = loginController.autentica(username, password);
 
                 if (utenteAutenticato != null) {
-                    ViewUtils.println(ColorUtils.ANSI_GREEN + "\nLogin effettuato con successo!" + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per continuare...");
+                    ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.LOGIN_SI + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                     ViewUtils.clearScreen();
                     return Navigazione.vaiA(getHomeViewPerRuolo(utenteAutenticato));
                 } else {
-                    ViewUtils.println(ColorUtils.ANSI_RED + "\nCredenziali non valide. Riprova." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per continuare...");
+                    ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.LOGIN_NO + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                     // Se il login fallisce, il loop while ricomincerà.
                 }
 

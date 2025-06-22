@@ -7,6 +7,8 @@ import com.chatmulticanale.model.TipoContestoChat;
 import com.chatmulticanale.utils.ColorUtils;
 import com.chatmulticanale.utils.InputUtils;
 import com.chatmulticanale.utils.ViewUtils;
+import com.chatmulticanale.view.costanti_view.CostantiView;
+
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class ChatView {
     private final TipoContestoChat tipoContesto;
     private final boolean solaLettura;
     private final int idUtenteLoggato;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat(CostantiView.FORMATO_DATA);
 
     public ChatView(InterazioneUtenteController controller, int idContesto, TipoContestoChat tipoContesto, boolean solaLettura, int idUtenteLoggato) {
         this.controller = controller;
@@ -43,17 +45,17 @@ public class ChatView {
 
             ViewUtils.println(ColorUtils.ANSI_BOLD + "--- Conversazione (Pagina " + paginaCorrente + ") ---" + ColorUtils.ANSI_RESET);
             if (solaLettura) {
-                ViewUtils.println(ColorUtils.ANSI_YELLOW + " (Modalità Sola Lettura)" + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.MODALITA_LETTURA + ColorUtils.ANSI_RESET);
             }
             ViewUtils.printSeparator();
 
             if (messaggi.isEmpty() && paginaCorrente > 1) {
-                ViewUtils.println("Non ci sono altre pagine.");
+                ViewUtils.println(CostantiView.NO_ALTRE_PAGINE);
                 paginaCorrente--;
-                InputUtils.pressEnterToContinue("Premi Invio per continuare...");
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                 continue;
             } else if (messaggi.isEmpty()) {
-                ViewUtils.println("Nessun messaggio in questa conversazione.");
+                ViewUtils.println(CostantiView.NO_MESSAGGIO_IN_CONVERSAZIONE);
             } else {
                 for (MessaggioDTO msg : messaggi) {
                     // Visualizziamo anche l'ID del messaggio, servirà per la citazione
@@ -89,7 +91,7 @@ public class ChatView {
                         if (paginaCorrente > 1) {
                             paginaCorrente--;
                         } else {
-                            ViewUtils.println("Sei già alla prima pagina.");
+                            ViewUtils.println(CostantiView.PRIMA_PAGINA);
                             InputUtils.pressEnterToContinue("");
                         }
                         break;
@@ -109,8 +111,8 @@ public class ChatView {
                         }
                         break;
                     default:
-                        ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Comando non riconosciuto." + ColorUtils.ANSI_RESET);
-                        InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
+                        ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.COMANDO_NON_RICONOSCIUTO + ColorUtils.ANSI_RESET);
+                        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
                         break; // Ignora input non validi
                 }
             } catch (CommandException e) {
@@ -149,11 +151,11 @@ public class ChatView {
         }
 
         if (successo) {
-            ViewUtils.println(ColorUtils.ANSI_GREEN + "Messaggio inviato!" + ColorUtils.ANSI_RESET);
+            ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.MESSAGGIO_INVIATO + ColorUtils.ANSI_RESET);
         } else {
-            ViewUtils.println(ColorUtils.ANSI_RED + "Errore: impossibile inviare il messaggio." + ColorUtils.ANSI_RESET);
+            ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ERRORE_INVIO_MESSAGGIO + ColorUtils.ANSI_RESET);
         }
-        InputUtils.pressEnterToContinue("Premi Invio per continuare...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
     }
 
     /**
@@ -163,8 +165,8 @@ public class ChatView {
      */
     private void handleCitaMessaggio(List<MessaggioDTO> messaggiVisibili) {
         if (messaggiVisibili.isEmpty()) {
-            ViewUtils.println(ColorUtils.ANSI_YELLOW + "Non ci sono messaggi in questa pagina da poter citare." + ColorUtils.ANSI_RESET);
-            InputUtils.pressEnterToContinue("");
+            ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.NO_MESSAGGI_IN_PAGINA_DA_CITARE + ColorUtils.ANSI_RESET);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
@@ -180,13 +182,13 @@ public class ChatView {
                 handleInviaMessaggio(idDaCitare);
             } else {
                 // Se l'ID non è nella lista, informiamo l'utente.
-                ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Puoi citare solo i messaggi presenti in questa pagina." + ColorUtils.ANSI_RESET);
-                InputUtils.pressEnterToContinue("");
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ID_NON_VALIDO_PER_CITAZIONE + ColorUtils.ANSI_RESET);
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
             }
         } catch (CommandException e) {
             // Gestisce il caso in cui l'utente digiti /b o /back.
-            ViewUtils.println("Citazione annullata.");
-            InputUtils.pressEnterToContinue("");
+            ViewUtils.println(CostantiView.CITAZIONE_ANNULLATA);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
         }
     }
 
@@ -198,8 +200,8 @@ public class ChatView {
      */
     private void handleAvviaChatPrivata(List<MessaggioDTO> messaggiVisibili) {
         if (messaggiVisibili.isEmpty()) {
-            ViewUtils.println(ColorUtils.ANSI_YELLOW + "Non ci sono messaggi in questa pagina da cui partire." + ColorUtils.ANSI_RESET);
-            InputUtils.pressEnterToContinue("");
+            ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.NO_MESSAGGI_DA_CUI_PARTIRE + ColorUtils.ANSI_RESET);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
@@ -214,21 +216,21 @@ public class ChatView {
                 java.util.Optional<String> errorOptional = controller.avviaNuovaChatPrivata(idMessaggioOrigine, this.idUtenteLoggato);
 
                 if (errorOptional.isEmpty()) { // Successo
-                    ViewUtils.println(ColorUtils.ANSI_GREEN + "\nChat privata avviata con successo!" + ColorUtils.ANSI_RESET);
+                    ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.CHAT_AVVIATA + ColorUtils.ANSI_RESET);
                     ViewUtils.println("Ora puoi accedervi dalla sezione 'Chat Private' nella home.");
                 } else { // Errore
-                    ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile avviare la chat." + ColorUtils.ANSI_RESET);
+                    ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ERRORE_AVVIO_CHAT + ColorUtils.ANSI_RESET);
                     ViewUtils.println(ColorUtils.ANSI_RED + "Motivo: " + errorOptional.get() + ColorUtils.ANSI_RESET);
                 }
             } else {
-                ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Puoi avviare una chat solo da un messaggio presente in questa pagina." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ID_NON_VALIDO_PER_AVVIARE_CHAT + ColorUtils.ANSI_RESET);
             }
-            InputUtils.pressEnterToContinue("");
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
 
         } catch (CommandException e) {
             // Gestisce solo l'annullamento tramite /b o /back.
-            ViewUtils.println("Operazione annullata.");
-            InputUtils.pressEnterToContinue("");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
         }
     }
 }

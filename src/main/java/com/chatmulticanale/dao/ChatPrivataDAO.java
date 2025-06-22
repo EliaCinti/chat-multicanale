@@ -1,12 +1,15 @@
 package com.chatmulticanale.dao;
 
+import com.chatmulticanale.dao.costanti.CostantiChatPrivataDAO;
 import com.chatmulticanale.dto.ChatPrivataDTO;
 import com.chatmulticanale.dto.ChatSupervisioneDTO;
 import com.chatmulticanale.utils.DatabaseConnector;
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,14 +17,6 @@ import java.util.logging.Logger;
 public class ChatPrivataDAO {
 
     private static final Logger logger = Logger.getLogger(ChatPrivataDAO.class.getName());
-
-    // --- Stored Procedures ---
-    private static final String SP_GET_CHAT_DA_SUPERVISIONARE = "{CALL sp_CP4_AccediChatPrivateProgetto(?, ?)}";
-    private static final String SP_AVVIA_CHAT_PRIVATA = "{CALL sp_UT3_AvviaChatPrivataDaMessaggio(?, ?)}";
-    private static final String SP_GET_CHAT_UTENTE = "{CALL sp_UT7_VisualizzaElencoChatPrivatePersonali(?)}";
-
-    // --- Query Dirette ---
-
 
     /**
      * Recupera una lista di chat private originate da un progetto specifico,
@@ -34,21 +29,27 @@ public class ChatPrivataDAO {
      * @throws SQLException se l'utente non è autorizzato o per altri errori DB.
      */
     public List<ChatSupervisioneDTO> getChatDaSupervisionare(int idProgetto, int idCapoProgetto) throws SQLException {
+        Connection conn = DatabaseConnector.getConnection();
+        if (conn == null) {
+            logger.log(Level.SEVERE, "Impossibile eseguire getChatDaSupervisionare perchè la connessione al database è assente.");
+            return Collections.emptyList();
+        }
+
         List<ChatSupervisioneDTO> chatList = new ArrayList<>();
-        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_GET_CHAT_DA_SUPERVISIONARE)) {
+        try (CallableStatement stmt = conn.prepareCall(CostantiChatPrivataDAO.SP_GET_CHAT_DA_SUPERVISIONARE)) {
             stmt.setInt(1, idCapoProgetto);
             stmt.setInt(2, idProgetto);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     ChatSupervisioneDTO dto = new ChatSupervisioneDTO();
-                    dto.setIdChat(rs.getInt("ID_Chat"));
-                    dto.setDataCreazioneChat(rs.getTimestamp("Timestamp_Creazione"));
-                    dto.setCreatoreChatUsername(rs.getString("Creatore_Chat_Username"));
-                    dto.setPartecipanteChatUsername(rs.getString("Partecipante_Chat_Username"));
-                    dto.setCanaleOrigineNome(rs.getString("Canale_Origine_Nome"));
+                    dto.setIdChat(rs.getInt(CostantiChatPrivataDAO.ID_CHAT));
+                    dto.setDataCreazioneChat(rs.getTimestamp(CostantiChatPrivataDAO.TIMESTAMP_CREAZIONE));
+                    dto.setCreatoreChatUsername(rs.getString(CostantiChatPrivataDAO.CREATORE_CHAT));
+                    dto.setPartecipanteChatUsername(rs.getString(CostantiChatPrivataDAO.PARTECIPANTE_CHAT));
+                    dto.setCanaleOrigineNome(rs.getString(CostantiChatPrivataDAO.NOME_CANALE_ORIGINE));
 
-                    String contenuto = rs.getString("Messaggio_Originale_Contenuto");
+                    String contenuto = rs.getString(CostantiChatPrivataDAO.MESSAGGIO_ORIGINE);
                     // Tronchiamo il messaggio per un'anteprima pulita
                     if (contenuto != null && contenuto.length() > 50) {
                         contenuto = contenuto.substring(0, 47) + "...";
@@ -59,9 +60,7 @@ public class ChatPrivataDAO {
                 }
             }
         } catch (SQLException e) {
-            // La SP può lanciare un errore se l'utente non è il responsabile, lo logghiamo e lo rilanciamo
-            logger.log(Level.WARNING, "Tentativo di accesso alle chat del progetto ID " + idProgetto + " da parte dell'utente ID " + idCapoProgetto + " fallito: " + e.getMessage());
-            throw e;
+            throw new SQLException("Impossibile recuperare le chat per la supervisione del progetto ID: " + idProgetto, e);
         }
         return chatList;
     }
@@ -76,14 +75,19 @@ public class ChatPrivataDAO {
      *         non è valido o se si tenta di avviare una chat con se stessi.
      */
     public void avviaChatPrivata(int idMessaggioOrigine, int idUtenteIniziatore) throws SQLException {
-        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_AVVIA_CHAT_PRIVATA)) {
+        Connection conn = DatabaseConnector.getConnection();
+        if (conn == null) {
+            logger.log(Level.SEVERE, "Impossibile eseguire avviaChatPrivata perchè la connessione al database è assente.");
+            return;
+        }
+
+        try (CallableStatement stmt = conn.prepareCall(CostantiChatPrivataDAO.SP_AVVIA_CHAT_PRIVATA)) {
             stmt.setInt(1, idUtenteIniziatore);
             stmt.setInt(2, idMessaggioOrigine);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
-            logger.log(Level.WARNING, "Tentativo di avviare una chat dal messaggio ID " + idMessaggioOrigine + " da parte dell'utente ID " + idUtenteIniziatore + " fallito: " + e.getMessage());
-            throw e;
+            throw new SQLException("Impossibile avviare la chat privata dal messaggio ID: " + idMessaggioOrigine, e);
         }
     }
 
@@ -95,24 +99,29 @@ public class ChatPrivataDAO {
      * @return Una lista di {@link ChatPrivataDTO}.
      */
     public List<ChatPrivataDTO> getChatDiUtente(int idUtente) {
+        Connection conn = DatabaseConnector.getConnection();
+        if (conn == null) {
+            logger.log(Level.SEVERE, "Impossibile eseguire getChatDiUtente perchè la connessione al database è assente.");
+            return Collections.emptyList();
+        }
+
         List<ChatPrivataDTO> chatList = new ArrayList<>();
         // Usiamo la nuova SP
-        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(SP_GET_CHAT_UTENTE)) {
+        try (CallableStatement stmt = conn.prepareCall(CostantiChatPrivataDAO.SP_GET_CHAT_UTENTE)) {
             stmt.setInt(1, idUtente);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     ChatPrivataDTO dto = new ChatPrivataDTO();
-                    dto.setIdChat(rs.getInt("ID_Chat"));
-                    dto.setDataCreazione(rs.getTimestamp("Timestamp_Creazione"));
-                    // La SP ci dà già direttamente il nome dell'altro partecipante
-                    dto.setAltroPartecipanteUsername(rs.getString("Altro_Partecipante_Username"));
+                    dto.setIdChat(rs.getInt(CostantiChatPrivataDAO.ID_CHAT));
+                    dto.setDataCreazione(rs.getTimestamp(CostantiChatPrivataDAO.TIMESTAMP_CREAZIONE));
+                    // La SP ci dà già direttamente il nome dell'altro partecipante tramite alias (AS)
+                    dto.setAltroPartecipanteUsername(rs.getString(CostantiChatPrivataDAO.ALTRO_PARTECIPANTE_USERNAME));
                     chatList.add(dto);
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante il recupero delle chat per l'utente ID: " + idUtente, e);
-        }
+            logger.log(Level.SEVERE, e, () -> "Errore durante il recupero delle chat per l'utente ID: " + idUtente);        }
         return chatList;
     }
 }

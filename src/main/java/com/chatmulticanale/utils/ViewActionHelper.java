@@ -13,6 +13,10 @@ import java.util.Optional;
  */
 public class ViewActionHelper {
 
+    private ViewActionHelper() {
+        // costruttore privato
+    }
+
     /**
      * Gestisce il flusso completo per avviare una chat privata da una lista di messaggi.
      * Chiede all'utente un ID, lo valida e invoca il controller per creare la chat.

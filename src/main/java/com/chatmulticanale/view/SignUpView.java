@@ -5,6 +5,7 @@ import com.chatmulticanale.exception.CommandException; // <-- NUOVO IMPORT
 import com.chatmulticanale.utils.ColorUtils;
 import com.chatmulticanale.utils.InputUtils;
 import com.chatmulticanale.utils.ViewUtils;
+import com.chatmulticanale.view.costanti_view.CostantiView;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 
@@ -23,7 +24,7 @@ public class SignUpView implements View {
     public Navigazione show() {
         ViewUtils.clearScreen();
         ViewUtils.println(ColorUtils.ANSI_BOLD + "--- REGISTRAZIONE NUOVO UTENTE ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare e tornare indietro.");
+        ViewUtils.println(CostantiView.B_O_BACK_2);
         ViewUtils.printSeparator();
 
         try {
@@ -49,7 +50,7 @@ public class SignUpView implements View {
             } else {
                 ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Username non disponibile." + ColorUtils.ANSI_RESET);
             }
-            InputUtils.pressEnterToContinue("\nPremi Invio per tornare alla schermata precedente...");
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
             return Navigazione.indietro();
 
         } catch (CommandException e) {

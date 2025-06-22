@@ -8,6 +8,7 @@ import com.chatmulticanale.model.CanaleProgetto;
 import com.chatmulticanale.model.TipoContestoChat;
 import com.chatmulticanale.utils.*;
 import com.chatmulticanale.utils.ViewActionHelper;
+import com.chatmulticanale.view.costanti_view.CostantiView;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 import java.util.List;
@@ -24,15 +25,15 @@ public class DipendenteView implements View {
     public Navigazione show() {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- HOME DIPENDENTE ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Benvenuto, " + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_DIPENDENTE + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.WELCOME + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
             ViewUtils.printSeparator();
 
-            ViewUtils.println("1. Accedi ai tuoi canali e chat");
-            ViewUtils.println("0. Logout");
+            ViewUtils.println(CostantiView.HOME_DIPENDENTE_OPZIONE_1);
+            ViewUtils.println(CostantiView.HOME_DIPENDENTE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 0, 1);
+            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 1);
 
             switch (scelta) {
                 case 1:
@@ -41,25 +42,24 @@ public class DipendenteView implements View {
                 case 0:
                     SessionManager.getInstance().logout();
                     return Navigazione.logout();
+                default:
             }
         }
     }
 
-    // Da modificare in CapoProgettoView.java e DipendenteView.java
-
     private void handleAccediACanaliEChat() {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AREA COMUNICAZIONI ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Digita '/b' o '/back' per tornare alla Home Principale.");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AREA_COMUNICAZIONI + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.B_O_BACK_2);
             ViewUtils.printSeparator();
-            ViewUtils.println("1. Accedi ai Canali di Progetto");
-            ViewUtils.println("2. Accedi alle Chat Private");
+            ViewUtils.println(CostantiView.ACCEDI_A_CANALI_E_CHAT_OPZIONE_1);
+            ViewUtils.println(CostantiView.ACCEDI_A_CANALI_E_CHAT_OPZIONE_2);
             ViewUtils.printSeparator();
 
             try {
                 // Ora il prompt per l'input è più generico
-                int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 1, 2);
+                int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 1, 2);
 
                 switch (scelta) {
                     case 1:
@@ -68,6 +68,7 @@ public class DipendenteView implements View {
                     case 2:
                         handleAccessoChatPrivate();
                         break;
+                    default:
                 }
             } catch (CommandException e) {
                 return;
@@ -77,20 +78,20 @@ public class DipendenteView implements View {
 
     private void handleAccessoCanaliProgetto() throws CommandException {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- I MIEI CANALI DI PROGETTO ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per tornare al menu precedente.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.ACCESSO_AI_CANALI_DI_PROGETTO + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK_2);
         ViewUtils.printSeparator();
 
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
 
         if (mieiCanali.isEmpty()) {
-            ViewUtils.println("Non partecipi a nessun canale di progetto.");
-            InputUtils.pressEnterToContinue("");
+            ViewUtils.println(CostantiView.NO_PARTECIPAZIONE_A_CANALI);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
-        String prompt = "Seleziona un canale per visualizzarne i messaggi:";
+        String prompt = CostantiView.SELEZIONA_CANALE_PER_MESSAGGI;
         int idCanaleSelezionato = selezionaCanale(mieiCanali, prompt);
 
         new ChatView(
@@ -105,14 +106,14 @@ public class DipendenteView implements View {
     private void handleAccessoChatPrivate() throws CommandException {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AREA CHAT PRIVATE ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Digita '/b' o '/back' per tornare al menu precedente.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AREA_CHAT_PRIVATE + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.B_O_BACK_2);
             ViewUtils.printSeparator();
-            ViewUtils.println("1. Visualizza le tue chat");
-            ViewUtils.println("2. Avvia una nuova chat da un messaggio di un canale");
+            ViewUtils.println(CostantiView.ACCEDI_CHAT_PRIVATE_OPZIONE_1);
+            ViewUtils.println(CostantiView.ACCEDI_CHAT_PRIVATE_OPZIONE_2);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 1, 2);
+            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 1, 2);
 
             try {
                 switch (scelta) {
@@ -122,6 +123,7 @@ public class DipendenteView implements View {
                     case 2:
                         handleAvviaNuovaChatDaCanale();
                         break;
+                    default:
                 }
             } catch (CommandException e) {
                 // Cattura il /b e ripropone il sotto-menu
@@ -132,20 +134,20 @@ public class DipendenteView implements View {
 
     private void handleVisualizzaMieChat() throws CommandException {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- LE TUE CHAT PRIVATE ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per tornare al menu precedente.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.LE_TUE_CHAT_PRIVATE + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK_2);
         ViewUtils.printSeparator();
 
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<ChatPrivataDTO> mieChat = interazioneController.getMieChatPrivate(idUtenteLoggato);
 
         if (mieChat.isEmpty()) {
-            ViewUtils.println("Non hai nessuna chat privata attiva.");
-            InputUtils.pressEnterToContinue("Premi Invio per tornare indietro...");
+            ViewUtils.println(CostantiView.NO_CHAT_ATTIVE);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
-        ViewUtils.println("Elenco delle tue conversazioni private:");
+        ViewUtils.println(CostantiView.ELENCO_CHAT_PRIVATE);
         String header = String.format("%-5s | %-20s | %s", "ID", "Avviata il", "Conversazione con");
         ViewUtils.println(ColorUtils.ANSI_BOLD + header + ColorUtils.ANSI_RESET);
 
@@ -156,7 +158,7 @@ public class DipendenteView implements View {
         });
         ViewUtils.printSeparator();
 
-        int idChatSelezionata = InputHelper.chiediIdValido("Inserisci l'ID della chat da visualizzare: ", mieChat);
+        int idChatSelezionata = InputHelper.chiediIdValido(CostantiView.VISUALIZZA_CHAT_INSERISCI_ID_CHAT, mieChat);
 
         new ChatView(
                 interazioneController,
@@ -169,20 +171,20 @@ public class DipendenteView implements View {
 
     private void handleAvviaNuovaChatDaCanale() throws CommandException {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AVVIA NUOVA CHAT PRIVATA ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AVVIA_NUOVA_CHAT_PRIVATA + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK_2);
         ViewUtils.printSeparator();
 
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
 
         if (mieiCanali.isEmpty()) {
-            ViewUtils.println("Devi partecipare ad almeno un canale per poter avviare una chat.");
-            InputUtils.pressEnterToContinue("");
+            ViewUtils.println(CostantiView.AVVIA_NUOVA_CHAT_NO_CANALI);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
-        String promptCanale = "Seleziona il canale contenente il messaggio da cui partire:";
+        String promptCanale = CostantiView.AVVIA_NUOVA_CHAT_SELEZIONA_CANALE;
         int idCanaleSelezionato = selezionaCanale(mieiCanali, promptCanale);
 
         int idMessaggioSelezionato = selezionaMessaggioDaCanale(idCanaleSelezionato, idUtenteLoggato);
@@ -195,7 +197,7 @@ public class DipendenteView implements View {
 
         ViewActionHelper.avviaChatPrivataDaListaMessaggi(List.of(msgPlaceholder), idUtenteLoggato, this.interazioneController);
 
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu precedente...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
     }
 
     private int selezionaCanale(List<CanaleProgetto> canali, String prompt) throws CommandException {
@@ -225,13 +227,13 @@ public class DipendenteView implements View {
             List<MessaggioDTO> messaggi = interazioneController.getPaginaMessaggiCanale(idCanale, idUtenteLoggato, paginaCorrente);
 
             if (messaggi.isEmpty() && paginaCorrente > 1) {
-                ViewUtils.println("Non ci sono altre pagine.");
+                ViewUtils.println(CostantiView.NO_ALTRE_PAGINE);
                 paginaCorrente--;
                 InputUtils.pressEnterToContinue("");
                 continue;
             } else if (messaggi.isEmpty()) {
-                ViewUtils.println("Nessun messaggio in questo canale.");
-                InputUtils.pressEnterToContinue("Premi Invio per tornare indietro...");
+                ViewUtils.println(CostantiView.NO_MESSAGGIO_IN_CANALE);
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
                 throw new CommandException(Navigazione.indietro());
             }
 
@@ -254,8 +256,8 @@ public class DipendenteView implements View {
                     if (paginaCorrente > 1) {
                         paginaCorrente--;
                     } else {
-                        ViewUtils.println("Sei già alla prima pagina.");
-                        InputUtils.pressEnterToContinue("Premi Invio per continuare...");
+                        ViewUtils.println(CostantiView.PRIMA_PAGINA);
+                        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                     }
                     break;
                 default:
@@ -266,12 +268,12 @@ public class DipendenteView implements View {
                         if (idValido) {
                             return idSelezionato; // Successo! Restituiamo l'ID.
                         } else {
-                            ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Seleziona un ID dalla pagina corrente." + ColorUtils.ANSI_RESET);
+                            ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ID_NON_VALIDO_IN_PAGINA_CORRENTE + ColorUtils.ANSI_RESET);
                             InputUtils.pressEnterToContinue("");
                         }
                     } catch (NumberFormatException e) {
-                        ViewUtils.println(ColorUtils.ANSI_RED + "Comando non riconosciuto. Riprova." + ColorUtils.ANSI_RESET);
-                        InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
+                        ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.COMANDO_NON_RICONOSCIUTO + ColorUtils.ANSI_RESET);
+                        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
                     }
                     break;
             }

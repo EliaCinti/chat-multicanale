@@ -6,6 +6,7 @@ import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.model.Progetto;
 import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.*;
+import com.chatmulticanale.view.costanti_view.CostantiView;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 import java.util.List;
@@ -25,18 +26,18 @@ public class AmministrazioneView implements View {
     public Navigazione show() {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- HOME AMMINISTRATORE ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Benvenuto, " + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_AMMINISTRATORE + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.WELCOME + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
             ViewUtils.printSeparator();
-            ViewUtils.println("1. Promuovi un utente a Capo Progetto (AM1)");
-            ViewUtils.println("2. Rimuovi ruolo Capo Progetto (AM2)");
-            ViewUtils.println("3. Assegna responsabilità Progetto a un Capo Progetto (AM3)");
-            ViewUtils.println("4. Riassegna responsabilità Progetto (AM4)");
-            ViewUtils.println("5. Aggiungi progetto");
-            ViewUtils.println("0. Logout");
+            ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_1);
+            ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_2);
+            ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_3);
+            ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_4);
+            ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_5);
+            ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 0, 5);
+            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
             switch (scelta) {
                 case 1:
                     handlePromuoviUtente();
@@ -62,19 +63,19 @@ public class AmministrazioneView implements View {
 
     private void handlePromuoviUtente() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- PROMUOVI UTENTE A CAPO PROGETTO (AM1) ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.PROMUOVI_UTENTE + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK);
         ViewUtils.printSeparator();
 
         List<Utente> dipendenti = adminController.getListaUtentiPromuovibili();
 
         if (dipendenti.isEmpty()) {
-            ViewUtils.println("Nessun dipendente da promuovere al momento.");
+            ViewUtils.println(CostantiView.PROMUOVI_UTENTE_NO_DIPENDENTI);
         } else {
             try {
-                ViewUtils.println("Lista dei Dipendenti che possono essere promossi:");
+                ViewUtils.println(CostantiView.PROMUOVI_UTENTE_LISTA_DIPENDENTI);
                 for (Utente utente : dipendenti) {
-                    String rigaUtente = String.format("ID: %-5d | Nome: %-15s | Cognome: %s",
+                    String rigaUtente = String.format(CostantiView.FORMATO_NOME_COMPLETO_UTENTE,
                             utente.getIdUtente(),
                             utente.getNome(),
                             utente.getCognome());
@@ -82,22 +83,22 @@ public class AmministrazioneView implements View {
                 }
                 ViewUtils.printSeparator();
 
-                int idUtenteDaPromuovere = InputHelper.chiediIdValido("Inserisci l'ID dell'utente da promuovere: ", dipendenti);
+                int idUtenteDaPromuovere = InputHelper.chiediIdValido(CostantiView.PROMUOVI_UTENTE_ID_UTENTE, dipendenti);
 
                 // Adesso siamo sicuri al 100% che 'idUtenteDaPromuovere' è un ID valido e presente nella lista.
                 boolean successo = adminController.promuoviUtenteACapoProgetto(idUtenteDaPromuovere);
                 if (successo) {
-                    ViewUtils.println(ColorUtils.ANSI_GREEN + "\nUtente promosso con successo!" + ColorUtils.ANSI_RESET);
+                    ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.PROMUOVI_UTENTE_SUCCESSO + ColorUtils.ANSI_RESET);
                 } else {
-                    ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile promuovere l'utente. Controllare i log." + ColorUtils.ANSI_RESET);
+                    ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.PROMUOVI_UTENTE_ERRORE + ColorUtils.ANSI_RESET);
                 }
 
             } catch (CommandException e) {
                 // Gestisce il comando /b o /back
-                ViewUtils.println("\nOperazione annullata.");
+                ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
             }
         }
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
     }
 
     /**
@@ -106,78 +107,77 @@ public class AmministrazioneView implements View {
      */
     private void handleDegradaCapoProgetto() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- RIMUOVI RUOLO CAPO PROGETTO (Procedura Guidata) ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.RIMUOVI_RUOLO_CAPO_PROGETTO + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK);
         ViewUtils.printSeparator();
 
         // 1. Chiedi quale Capo Progetto degradare
         List<Utente> capiProgetto = adminController.getListaCapiProgetto();
         if (capiProgetto.isEmpty()) {
-            ViewUtils.println("Nessun Capo Progetto da rimuovere.");
-            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            ViewUtils.println(CostantiView.DEGRADA_RUOLO_NO_CAPO_PROGETTO_DA_RIMUOVERE);
+            InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
             return;
         }
 
         // Aggiungiamo il blocco try-catch per gestire la CommandException di InputUtils
         try {
-            ViewUtils.println("Lista dei Capi Progetto attuali:");
-            capiProgetto.forEach(u -> ViewUtils.println(String.format("ID: %-5d | Nome: %-15s | Cognome: %s", u.getIdUtente(), u.getNome(), u.getCognome())));
+            ViewUtils.println(CostantiView.DEGRADA_RUOLO_LISTA_CAPI_PROGETTO);
+            capiProgetto.forEach(u -> ViewUtils.println(String.format(CostantiView.FORMATO_NOME_COMPLETO_UTENTE, u.getIdUtente(), u.getNome(), u.getCognome())));
             ViewUtils.printSeparator();
 
-            int idDaDegradare = InputHelper.chiediIdValido("Inserisci l'ID del Capo Progetto da degradare: ", capiProgetto);
+            int idDaDegradare = InputHelper.chiediIdValido(CostantiView.DEGRADA_RUOLO_ID_CAPO_PROGETTO, capiProgetto);
 
-            final int finalIdDaDegradare = idDaDegradare; // Necessario per la lambda
+            final int finalIdDaDegradare = idDaDegradare;
             List<Utente> altriCapi = capiProgetto.stream()
                     .filter(cp -> cp.getIdUtente() != finalIdDaDegradare)
                     .toList();
 
-            // Questo controllo ora è ancora più importante
             if (altriCapi.isEmpty() && !adminController.getProgettiDiUnResponsabile(idDaDegradare).isEmpty()) {
-                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile procedere. Questo utente ha progetti da riassegnare, ma non ci sono altri Capi Progetto disponibili." + ColorUtils.ANSI_RESET);
-                InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.RIASSEGNAZIONE_ERRORE + ColorUtils.ANSI_RESET);
+                InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
                 return;
             }
 
             // 3. Trova e gestisci i progetti dell'utente da degradare
             List<Progetto> progettiDaRiassegnare = adminController.getProgettiDiUnResponsabile(idDaDegradare);
             if (!progettiDaRiassegnare.isEmpty()) {
-                ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nATTENZIONE: Questo utente è responsabile dei seguenti progetti." + ColorUtils.ANSI_RESET);
-                ViewUtils.println("È necessario riassegnarli tutti prima di poter procedere con il degrado.");
+                ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.DEGRADA_RUOLO_WARNING + ColorUtils.ANSI_RESET);
+                ViewUtils.println(CostantiView.DEGRADA_RUOLO_RIASSEGNAZIONE_NECESSARIA);
 
                 for (Progetto progetto : progettiDaRiassegnare) {
                     ViewUtils.printSeparator();
                     ViewUtils.println("Riassegnazione del progetto: '" + progetto.getNomeProgetto() + "' (ID: " + progetto.getIdProgetto() + ")");
-                    ViewUtils.println("\nCapi Progetto disponibili per la riassegnazione:");
-                    altriCapi.forEach(u -> ViewUtils.println(String.format("ID: %-5d | Nome: %-15s", u.getIdUtente(), u.getNome())));
+                    ViewUtils.println(CostantiView.DEGRADA_RUOLO_CAPI_PROGETTO_DISPONIBILI);
+                    altriCapi.forEach(u -> ViewUtils.println(String.format(CostantiView.FORMATO_NOME_UTENTE, u.getIdUtente(), u.getNome())));
 
-                    int idNuovoResponsabile = InputHelper.chiediIdValido("\nInserisci l'ID del nuovo responsabile per questo progetto: ", altriCapi);
+                    int idNuovoResponsabile = InputHelper.chiediIdValido(CostantiView.DEGRADA_RUOLO_INSERISCI_ID_NUOVO_CAPO_PROGETTO, altriCapi);
 
                     if (adminController.riassegnaProgetto(progetto.getIdProgetto(), idNuovoResponsabile)) {
-                        ViewUtils.println(ColorUtils.ANSI_GREEN + "Progetto riassegnato con successo." + ColorUtils.ANSI_RESET);
+                        ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.RIASSEGNAZIONE_SUCCESSO + ColorUtils.ANSI_RESET);
                     } else {
-                        ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE durante la riassegnazione. Procedura annullata." + ColorUtils.ANSI_RESET);
+                        ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.RIASSEGNAZIONE_ERRORE_2 + ColorUtils.ANSI_RESET);
                         InputUtils.pressEnterToContinue("");
                         return; // Interrompe l'intera operazione se una riassegnazione fallisce
                     }
                 }
-                ViewUtils.println(ColorUtils.ANSI_GREEN + "\nTutte le responsabilità sono state trasferite con successo." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.DEGRADA_RUOLO_SUCCESSO_2 + ColorUtils.ANSI_RESET);
             } else {
-                ViewUtils.println("\nL'utente selezionato non ha responsabilità di progetto attive.");
+                ViewUtils.println(CostantiView.DEGRADA_RUOLO_NO_RESPONSABILITA);
             }
 
             // 4. Esegui il degrado finale
             ViewUtils.println("Procedo con il degrado del ruolo...");
             if (adminController.finalizzaDegradoCapoProgetto(idDaDegradare)) {
-                ViewUtils.println(ColorUtils.ANSI_GREEN + "Ruolo rimosso con successo! L'utente è ora un Dipendente." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.DEGRADA_RUOLO_SUCCESSO + ColorUtils.ANSI_RESET);
             } else {
-                ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE finale durante il degrado del ruolo." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.DEGRADA_RUOLO_ERRORE + ColorUtils.ANSI_RESET);
             }
 
         } catch (CommandException e) {
             // Se l'utente digita /b o /back in qualsiasi momento, l'operazione viene annullata.
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_MENU);
     }
 
     /**
@@ -185,25 +185,25 @@ public class AmministrazioneView implements View {
      */
     private void handleAggiungiProgetto() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AGGIUNGI PROGETTO ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AGGIUNGI_PROGETTO + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK);
         ViewUtils.printSeparator();
 
         try {
-            String nomeProgetto = InputUtils.askForInput("Nome del nuovo progetto: ");
-            String descrizioneProgetto = InputUtils.askForInput("Descrizione del progetto: ");
+            String nomeProgetto = InputUtils.askForInput(CostantiView.AGGIUNGI_PROGETTO_NOME_PROGETTO);
+            String descrizioneProgetto = InputUtils.askForInput(CostantiView.AGGIUNGI_PROGETTO_DESCRIZIONE_PROGETTO);
 
             if (adminController.creaNuovoProgetto(nomeProgetto, descrizioneProgetto)) {
                 ViewUtils.println(ColorUtils.ANSI_GREEN + "\nProgetto '" + nomeProgetto + "' creato con successo!" + ColorUtils.ANSI_RESET);
                 ViewUtils.println("Ora puoi assegnarlo a un Capo Progetto usando l'opzione 3.");
             } else {
-                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile creare il progetto. Il nome potrebbe essere già esistente." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.AGGIUNGI_PROGETTO_IMPOSSIBILE_CREARE_PROGETTO + ColorUtils.ANSI_RESET);
             }
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
 
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_MENU);
     }
 
     /**
@@ -212,51 +212,51 @@ public class AmministrazioneView implements View {
      */
     private void handleAssegnaResponsabilita() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- ASSEGNA RESPONSABILITÀ PROGETTO (AM3) ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.ASSEGNA_RESPONSABILITA + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK);
         ViewUtils.printSeparator();
 
         // 1. Recupera i dati necessari
         List<Progetto> progetti = adminController.getListaProgettiNonAssegnati();
         if (progetti.isEmpty()) {
-            ViewUtils.println("Nessun progetto da assegnare al momento.");
-            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            ViewUtils.println(CostantiView.ASSEGNAZIONE_NESSUN_PROGETTO_DA_ASSEGNARE);
+            InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
             return;
         }
 
         List<Utente> capiProgetto = adminController.getListaCapiProgetto();
         if (capiProgetto.isEmpty()) {
-            ViewUtils.println("Nessun Capo Progetto disponibile a cui assegnare progetti.");
-            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            ViewUtils.println(CostantiView.ASSEGNAZIONE_NO_CAPI_PROGETTO_DISPONIBILI);
+            InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
             return;
         }
 
         try {
             // 2. Mostra i progetti e chiede una selezione VALIDA
-            ViewUtils.println("Lista dei Progetti non assegnati:");
-            progetti.forEach(p -> ViewUtils.println(String.format("ID: %-5d | Nome: %s", p.getIdProgetto(), p.getNomeProgetto())));
+            ViewUtils.println(CostantiView.ASSEGNAZIONE_LISTA_PROGETTI_NON_ASSEGNATI);
+            progetti.forEach(p -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME, p.getIdProgetto(), p.getNomeProgetto())));
             ViewUtils.printSeparator();
-            int idProgetto = InputHelper.chiediIdValido("Inserisci l'ID del progetto da assegnare: ", progetti);
+            int idProgetto = InputHelper.chiediIdValido(CostantiView.ASSEGNAZIONE_INSERIRE_ID_PROGETTO, progetti);
 
 
             // 3. Mostra i capi progetto e chiede una selezione VALIDA
-            ViewUtils.println("\nLista dei Capi Progetto disponibili:");
-            capiProgetto.forEach(cp -> ViewUtils.println(String.format("ID: %-5d | Nome: %s %s", cp.getIdUtente(), cp.getNome(), cp.getCognome())));
+            ViewUtils.println(CostantiView.ASSEGNAZIONE_LISTA_CAPI_PROGETTO);
+            capiProgetto.forEach(cp -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME_COGNOME, cp.getIdUtente(), cp.getNome(), cp.getCognome())));
             ViewUtils.printSeparator();
-            int idCapo = InputHelper.chiediIdValido("Inserisci l'ID del Capo Progetto a cui assegnare il progetto: ", capiProgetto);
+            int idCapo = InputHelper.chiediIdValido(CostantiView.ASSEGNAZIONE_INSERIRE_ID_CAPO_PROGETTO, capiProgetto);
 
             // 4. Esegue l'azione solo dopo aver ricevuto input validati
             if (adminController.assegnaProgetto(idProgetto, idCapo)) {
-                ViewUtils.println(ColorUtils.ANSI_GREEN + "\nProgetto assegnato con successo!" + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.ASSEGNAZIONE_PROGETTO_ASSEGNATO + ColorUtils.ANSI_RESET);
             } else {
-                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile assegnare il progetto. Controllare i log." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ASSEGNAZIONE_PROGETTO_NON_ASSEGNATO + ColorUtils.ANSI_RESET);
             }
 
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
 
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_MENU);
     }
 
     /**
@@ -265,74 +265,74 @@ public class AmministrazioneView implements View {
      */
     private void handleRiassegnaProgetto() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- RIASSEGNA RESPONSABILITÀ PROGETTO (AM4) ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.RIASSEGNA_RESPONSABILITA + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK);
         ViewUtils.printSeparator();
 
         // 1. Recupera i dati necessari
         List<ProgettoResponsabileDTO> progettiAssegnati = adminController.getListaProgettiConResponsabile();
         if (progettiAssegnati.isEmpty()) {
-            ViewUtils.println("Nessun progetto attualmente assegnato da poter riassegnare.");
-            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            ViewUtils.println(CostantiView.RIASSEGNAZIONE_NO_PROGETTI_ASSEGNATI);
+            InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
             return;
         }
 
         List<Utente> tuttiCapiProgetto = adminController.getListaCapiProgetto();
         // Se c'è meno di un altro capo progetto, la riassegnazione è impossibile.
         if (tuttiCapiProgetto.size() < 2) {
-            ViewUtils.println(ColorUtils.ANSI_YELLOW + "Attenzione: Non è possibile effettuare riassegnazioni perché non ci sono abbastanza Capi Progetto." + ColorUtils.ANSI_RESET);
-            InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+            ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.RIASSEGNAZIONE_NO_ABBASTANZA_CAPI_PROGETTO + ColorUtils.ANSI_RESET);
+            InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
             return;
         }
 
         try {
             // 2. Mostra i progetti e chiede una selezione valida
-            ViewUtils.println("Lista dei Progetti attualmente assegnati:");
+            ViewUtils.println(CostantiView.RIASSEGNAZIONE_LISTA_PROGETTI);
             progettiAssegnati.forEach(dto -> {
-                String riga = String.format("ID: %-5d | Nome: %-25s | Responsabile: %s %s",
+                String riga = String.format(CostantiView.FORMATO_ID_NOME_NOME_COGNOME,
                         dto.getIdProgetto(), dto.getNomeProgetto(), dto.getNomeResponsabile(), dto.getCognomeResponsabile());
                 ViewUtils.println(riga);
             });
             ViewUtils.printSeparator();
 
-            int idProgetto = InputHelper.chiediIdValido("Inserisci l'ID del progetto da riassegnare: ", progettiAssegnati);
+            int idProgetto = InputHelper.chiediIdValido(CostantiView.RIASSEGNAZIONE_INSERISCI_ID_PROGETTO, progettiAssegnati);
 
             // 3. Identifica il responsabile attuale e filtra la lista dei candidati
             final int idResponsabileAttuale = progettiAssegnati.stream()
                     .filter(p -> p.getIdProgetto() == idProgetto)
                     .findFirst()
                     .map(ProgettoResponsabileDTO::getIdResponsabile) // Grazie al DTO modificato!
-                    .orElseThrow(() -> new IllegalStateException("Logica inconsistente: progetto non trovato dopo validazione."));
+                    .orElseThrow(() -> new IllegalStateException(CostantiView.RIASSEGNAZIONE_ERRORE_4));
 
             List<Utente> capiProgettoDisponibili = tuttiCapiProgetto.stream()
                     .filter(cp -> cp.getIdUtente() != idResponsabileAttuale)
                     .toList();
 
             if (capiProgettoDisponibili.isEmpty()) {
-                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Non ci sono altri Capi Progetto disponibili a cui riassegnare questo progetto." + ColorUtils.ANSI_RESET);
-                InputUtils.pressEnterToContinue("\nPremi Invio per tornare al menu...");
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.RIASSEGNAZIONE_NESSUN_CAPO_PROGETTO_DISPONIBILE + ColorUtils.ANSI_RESET);
+                InputUtils.pressEnterToContinue(CostantiView.A_CAPO_INVIO_PER_MENU);
                 return;
             }
 
             // 4. Mostra la lista filtrata e chiede la nuova selezione
-            ViewUtils.println("\nLista dei Capi Progetto disponibili (escluso il responsabile attuale):");
-            capiProgettoDisponibili.forEach(cp -> ViewUtils.println(String.format("ID: %-5d | Nome: %s %s", cp.getIdUtente(), cp.getNome(), cp.getCognome())));
+            ViewUtils.println(CostantiView.RIASSEGNAZIONE_LISTA_CAPI_PROGETTO_DISPONIBILI);
+            capiProgettoDisponibili.forEach(cp -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME_COGNOME, cp.getIdUtente(), cp.getNome(), cp.getCognome())));
             ViewUtils.printSeparator();
 
             // La validazione avviene sulla lista dei candidati disponibili
-            int idNuovoCapo = InputHelper.chiediIdValido("Inserisci l'ID del NUOVO Capo Progetto responsabile: ", capiProgettoDisponibili);
+            int idNuovoCapo = InputHelper.chiediIdValido(CostantiView.RIASSEGNAZIONE_ID_NUOVO_CAPO_PROGETTO, capiProgettoDisponibili);
 
             // 5. Esegue l'azione
             if (adminController.riassegnaProgetto(idProgetto, idNuovoCapo)) {
-                ViewUtils.println(ColorUtils.ANSI_GREEN + "\nProgetto riassegnato con successo!" + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.RIASSEGNAZIONE_OK + ColorUtils.ANSI_RESET);
             } else {
-                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile riassegnare il progetto. Controllare i log." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.RIASSEGNAZIONE_ERRORE_3 + ColorUtils.ANSI_RESET);
             }
 
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.INVIO_PER_MENU);
         }
 
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_MENU);
     }
 }

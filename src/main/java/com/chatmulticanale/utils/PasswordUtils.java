@@ -9,7 +9,7 @@ import org.mindrot.jbcrypt.BCrypt;
 public class PasswordUtils {
 
     private PasswordUtils() {
-        /* no instance */
+        // costruttore vuoto
     }
 
     // Default cost factor (work factor) for BCrypt

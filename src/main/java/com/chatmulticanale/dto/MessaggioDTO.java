@@ -9,10 +9,6 @@ public class MessaggioDTO {
     private Timestamp timestamp;
     private String usernameMittente;
 
-    // TODO: In futuro, potremmo aggiungere qui i dati del messaggio citato
-    // private String contenutoMessaggioCitato;
-    // private String usernameMittenteCitato;
-
     // --- GETTER E SETTER ---
 
     public int getIdMessaggio() {

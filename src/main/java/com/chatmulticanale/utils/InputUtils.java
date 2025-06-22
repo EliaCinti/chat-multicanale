@@ -12,6 +12,10 @@ import java.util.function.Predicate;
  */
 public class InputUtils {
 
+    private InputUtils() {
+        // costruttore vuoto
+    }
+
     // Un'unica istanza di Scanner per tutta l'applicazione.
     private static final Scanner scanner = new Scanner(System.in);
 

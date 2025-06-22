@@ -11,6 +11,7 @@ import com.chatmulticanale.model.Progetto;
 import com.chatmulticanale.model.TipoContestoChat;
 import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.*;
+import com.chatmulticanale.view.costanti_view.CostantiView;
 import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 import java.util.List;
@@ -29,24 +30,24 @@ public class CapoProgettoView implements View {
     public Navigazione show() {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- HOME CAPO PROGETTO ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Benvenuto, " + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_CAPO_PROGETTO + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.WELCOME + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
             ViewUtils.printSeparator();
 
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "Opzioni di Gestione Progetti:" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("1. Visualizza i progetti di cui sei responsabile");
-            ViewUtils.println("2. Crea un nuovo canale per un progetto (CP1)");
-            ViewUtils.println("3. Aggiungi un dipendente a un canale (CP2)");
-            ViewUtils.println("4. Rimuovi un dipendente da un canale (CP3)");
-            ViewUtils.println("5. Supervisiona le chat private di un progetto (CP4)");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_CAPO_PROGETTO_OPZIONI_GESTIONE_PROGETTI + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_1);
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_2);
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_3);
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_4);
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_5);
             ViewUtils.printSeparator();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "Opzioni di Interazione Utente:" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("6. Accedi ai tuoi canali e chat");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_CAPO_PROGETTO_OPZIONI_INTERAZIONE_UTENTE + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_6);
             ViewUtils.printSeparator();
-            ViewUtils.println("0. Logout");
+            ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 0, 6);
+            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
 
             switch (scelta) {
                 case 1:
@@ -70,59 +71,60 @@ public class CapoProgettoView implements View {
                 case 0:
                     SessionManager.getInstance().logout();
                     return Navigazione.logout();
+                default:
             }
         }
     }
 
     private void handleVisualizzaMieiProgetti() {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- I MIEI PROGETTI ---" + ColorUtils.ANSI_RESET);
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.I_MIEI_PROGETTI + ColorUtils.ANSI_RESET);
         ViewUtils.printSeparator();
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
         if (mieiProgetti.isEmpty()) {
-            ViewUtils.println("Al momento non sei responsabile di nessun progetto.");
+            ViewUtils.println(CostantiView.VISUALIZZA_PROGETTI_RESPONSABILE_DI_NESSUN_PROGETTO);
         } else {
-            ViewUtils.println("Elenco dei progetti di cui sei responsabile:");
+            ViewUtils.println(CostantiView.VISUALIZZA_PROGETTI_ELENCO_PROGETTI);
             mieiProgetti.forEach(p -> {
-                String riga = String.format("  ID: %-5d | Nome: %s", p.getIdProgetto(), p.getNomeProgetto());
+                String riga = String.format(CostantiView.FORMATO_ID_NOME, p.getIdProgetto(), p.getNomeProgetto());
                 ViewUtils.println(riga);
             });
         }
         ViewUtils.printSeparator();
-        InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
     private void handleCreaCanale() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         try {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- CREA NUOVO CANALE (CP1) ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Digita '/b' o '/back' per annullare in qualsiasi momento.");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.CREA_NUOVO_CANALE + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.B_O_BACK);
             ViewUtils.printSeparator();
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
-                ViewUtils.println("Non hai progetti di cui sei responsabile, quindi non puoi creare canali.");
-                InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+                ViewUtils.println(CostantiView.CREA_CANALE_NO_PROGETTI);
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
                 return;
             }
-            int idProgettoSelezionato = selezionaProgetto(mieiProgetti, "Seleziona il progetto per cui vuoi creare un nuovo canale:");
-            ViewUtils.println("\nOra inserisci i dettagli per il nuovo canale.");
-            String nomeCanale = InputUtils.askForInput("Nome del canale: ");
+            int idProgettoSelezionato = selezionaProgetto(mieiProgetti, CostantiView.CREA_CANALE_SELEZIONA_PROGETTO);
+            ViewUtils.println(CostantiView.CREA_CANALE_DETTAGLI);
+            String nomeCanale = InputUtils.askForInput(CostantiView.CREA_CANALE_NOME_CANALE);
             String descrizioneCanale = InputUtils.askForInput(
-                    "Descrizione del canale (opzionale, premi Invio per saltare): ",
+                    CostantiView.CREA_CANALE_DESCRIZIONE_CANALE,
                     s -> true, // Validatore che accetta tutto
                     ""
             );
             if (gestioneController.creaNuovoCanalePerProgetto(nomeCanale, descrizioneCanale, idProgettoSelezionato, idUtenteLoggato)) {
-                ViewUtils.println(ColorUtils.ANSI_GREEN + "\nCanale '" + nomeCanale + "' creato con successo!" + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.CREA_CANALE_SUCCESSO_PARTE_1 + nomeCanale + CostantiView.CREA_CANALE_SUCCESSO_PARTE_2 + ColorUtils.ANSI_RESET);
             } else {
-                ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile creare il canale. Il nome potrebbe essere già in uso per questo progetto." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.CREA_CANALE_ERRORE + ColorUtils.ANSI_RESET);
             }
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
-        InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
     private void handleAggiungiUtenteACanale() {
@@ -130,41 +132,41 @@ public class CapoProgettoView implements View {
         try {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
-                ViewUtils.println("Non hai progetti da gestire.");
+                ViewUtils.println(CostantiView.NO_PROGETTI);
                 InputUtils.pressEnterToContinue("");
                 return;
             }
             progettoLoop:
             while (true) {
                 ViewUtils.clearScreen();
-                ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AGGIUNGI DIPENDENTE A CANALE (CP2) ---" + ColorUtils.ANSI_RESET);
-                ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
+                ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AGGIUNGI_DIPENDENTE_A_CANALE + ColorUtils.ANSI_RESET);
+                ViewUtils.println(CostantiView.B_O_BACK_2);
                 ViewUtils.printSeparator();
-                int idProgetto = selezionaProgetto(mieiProgetti, "Seleziona il progetto di cui vuoi modificare un canale:");
+                int idProgetto = selezionaProgetto(mieiProgetti, CostantiView.SELEZIONA_PROGETTO);
                 List<CanaleProgetto> canali = gestioneController.getCanaliDelProgetto(idProgetto);
                 if (canali.isEmpty()) {
-                    ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Questo progetto non ha canali." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del progetto...");
+                    ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.NO_CANALI + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_SELEZIONE_PROGETTO);
                     continue;
                 }
                 while (true) {
                     try {
-                        int idCanale = selezionaCanale(canali, "Seleziona il canale a cui aggiungere un dipendente (o usa /b per scegliere un altro progetto):");
+                        int idCanale = selezionaCanale(canali, CostantiView.AGGIUNGI_DIPENDENTE_SELEZIONE_CANALE);
                         List<Utente> dipendenti = gestioneController.getDipendentiAggiungibili(idCanale);
                         if (dipendenti.isEmpty()) {
-                            ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono altri dipendenti da poter aggiungere a questo canale." + ColorUtils.ANSI_RESET);
-                            InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del canale...");
+                            ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.AGGIUNGI_DIPENDENTE_NO_ALTRI_DIPENDENTI + ColorUtils.ANSI_RESET);
+                            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_SELEZIONE_CANALE);
                             ViewUtils.clearScreen();
                             continue;
                         }
-                        ViewUtils.println("\nSeleziona il dipendente da aggiungere al canale:");
-                        dipendenti.forEach(d -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s %s", d.getIdUtente(), d.getNome(), d.getCognome())));
+                        ViewUtils.println(CostantiView.AGGIUNGI_DIPENDENTE_SELEZIONA_DIPENDENTE);
+                        dipendenti.forEach(d -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME_COGNOME, d.getIdUtente(), d.getNome(), d.getCognome())));
                         ViewUtils.printSeparator();
-                        int idDipendente = InputHelper.chiediIdValido("ID Dipendente: ", dipendenti);
+                        int idDipendente = InputHelper.chiediIdValido(CostantiView.ID_DIPENDENTE, dipendenti);
                         if (gestioneController.aggiungiDipendenteACanale(idCanale, idDipendente)) {
-                            ViewUtils.println(ColorUtils.ANSI_GREEN + "\nDipendente aggiunto al canale con successo!" + ColorUtils.ANSI_RESET);
+                            ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.AGGIUNGI_DIPENDENTE_SUCCESSO + ColorUtils.ANSI_RESET);
                         } else {
-                            ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile aggiungere il dipendente." + ColorUtils.ANSI_RESET);
+                            ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.AGGIUNGI_DIPENDENTE_ERRORE + ColorUtils.ANSI_RESET);
                         }
                         break progettoLoop;
                     } catch (CommandException e) {
@@ -173,9 +175,9 @@ public class CapoProgettoView implements View {
                 }
             }
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
-        InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
     private void handleRimuoviUtenteDaCanale() {
@@ -183,41 +185,41 @@ public class CapoProgettoView implements View {
         try {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
-                ViewUtils.println("Non hai progetti da gestire.");
+                ViewUtils.println(CostantiView.NO_PROGETTI);
                 InputUtils.pressEnterToContinue("");
                 return;
             }
             progettoLoop:
             while (true) {
                 ViewUtils.clearScreen();
-                ViewUtils.println(ColorUtils.ANSI_BOLD + "--- RIMUOVI DIPENDENTE DA CANALE (CP3) ---" + ColorUtils.ANSI_RESET);
-                ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
+                ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.RIMUOVI_DIPENDENTE_DA_CANALE + ColorUtils.ANSI_RESET);
+                ViewUtils.println(CostantiView.B_O_BACK_2);
                 ViewUtils.printSeparator();
-                int idProgetto = selezionaProgetto(mieiProgetti, "Seleziona il progetto da cui vuoi modificare un canale:");
+                int idProgetto = selezionaProgetto(mieiProgetti, CostantiView.SELEZIONA_PROGETTO);
                 List<CanaleProgetto> canali = gestioneController.getCanaliDelProgetto(idProgetto);
                 if (canali.isEmpty()) {
-                    ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Questo progetto non ha canali." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del progetto...");
+                    ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.NO_CANALI + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_SELEZIONE_PROGETTO);
                     continue;
                 }
                 while (true) {
                     try {
-                        int idCanale = selezionaCanale(canali, "Seleziona il canale da cui rimuovere un dipendente (o usa /b per scegliere un altro progetto):");
+                        int idCanale = selezionaCanale(canali, CostantiView.RIMUOVI_DIPENDENTE_SELEZIONE_CANALE);
                         List<Utente> dipendentiNelCanale = gestioneController.getDipendentiDelCanale(idCanale);
                         if (dipendentiNelCanale.isEmpty()) {
-                            ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono dipendenti da poter rimuovere da questo canale." + ColorUtils.ANSI_RESET);
-                            InputUtils.pressEnterToContinue("Premi Invio per tornare alla selezione del canale...");
+                            ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.RIMUOVI_DIPENDENTE_NO_DIPENDENTI_WARNING + ColorUtils.ANSI_RESET);
+                            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_SELEZIONE_CANALE);
                             ViewUtils.clearScreen();
                             continue;
                         }
-                        ViewUtils.println("\nSeleziona il dipendente da rimuovere dal canale:");
-                        dipendentiNelCanale.forEach(d -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s %s", d.getIdUtente(), d.getNome(), d.getCognome())));
+                        ViewUtils.println(CostantiView.RIMUOVI_DIPENDENTE_SELEZIONA_DIPENDENTE);
+                        dipendentiNelCanale.forEach(d -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME_COGNOME, d.getIdUtente(), d.getNome(), d.getCognome())));
                         ViewUtils.printSeparator();
-                        int idDipendente = InputHelper.chiediIdValido("ID Dipendente: ", dipendentiNelCanale);
+                        int idDipendente = InputHelper.chiediIdValido(CostantiView.ID_DIPENDENTE, dipendentiNelCanale);
                         if (gestioneController.rimuoviDipendenteDaCanale(idCanale, idDipendente)) {
-                            ViewUtils.println(ColorUtils.ANSI_GREEN + "\nDipendente rimosso dal canale con successo!" + ColorUtils.ANSI_RESET);
+                            ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.RIMUOVI_DIPENDENTE_SUCCESSO + ColorUtils.ANSI_RESET);
                         } else {
-                            ViewUtils.println(ColorUtils.ANSI_RED + "\nERRORE: Impossibile rimuovere il dipendente." + ColorUtils.ANSI_RESET);
+                            ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.RIMUOVI_DIPENDENTE_ERRORE + ColorUtils.ANSI_RESET);
                         }
                         break progettoLoop;
                     } catch (CommandException e) {
@@ -226,9 +228,9 @@ public class CapoProgettoView implements View {
                 }
             }
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
-        InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
     /**
@@ -241,31 +243,31 @@ public class CapoProgettoView implements View {
         try {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
-                ViewUtils.println("Non hai progetti da gestire.");
+                ViewUtils.println(CostantiView.NO_PROGETTI);
                 InputUtils.pressEnterToContinue("");
                 return;
             }
 
             while (true) {
                 ViewUtils.clearScreen();
-                ViewUtils.println(ColorUtils.ANSI_BOLD + "--- SUPERVISIONE CHAT PRIVATE (CP4) ---" + ColorUtils.ANSI_RESET);
-                ViewUtils.println("Digita '/b' o '/back' per tornare alla home in qualsiasi momento.");
+                ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.SUPERVISIONE_CHAT_PRIVATE + ColorUtils.ANSI_RESET);
+                ViewUtils.println(CostantiView.B_O_BACK_2);
                 ViewUtils.printSeparator();
 
-                String promptProgetto = "Seleziona il progetto di cui vuoi supervisionare le chat private:";
-                int idProgetto = selezionaProgetto(mieiProgetti, promptProgetto);
+
+                int idProgetto = selezionaProgetto(mieiProgetti, CostantiView.SUPERVISIONE_CHAT_SELEZIONA_PROGETTO);
 
                 List<ChatSupervisioneDTO> chatDaSupervisionare = gestioneController.getChatPrivateDaSupervisionare(idProgetto, idUtenteLoggato);
 
                 if (chatDaSupervisionare == null) {
-                    ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Non sei autorizzato o si è verificato un problema." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
+                    ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.SUPERVISIONE_CHAT_ERRORE + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
                     continue; // Ripresenta la lista dei progetti
                 }
 
                 if (chatDaSupervisionare.isEmpty()) {
-                    ViewUtils.println(ColorUtils.ANSI_YELLOW + "\nAttenzione: Non ci sono chat private originate da questo progetto da supervisionare." + ColorUtils.ANSI_RESET);
-                    InputUtils.pressEnterToContinue("Premi Invio per scegliere un altro progetto...");
+                    ViewUtils.println(ColorUtils.ANSI_YELLOW + CostantiView.SUPERVISIONE_CHAT_NO_CHAT_WARNING + ColorUtils.ANSI_RESET);
+                    InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_SELEZIONE_PROGETTO);
                     continue; // Ripresenta la lista dei progetti
                 }
 
@@ -274,7 +276,7 @@ public class CapoProgettoView implements View {
                         .filter(p -> p.getIdProgetto() == idProgetto).findFirst()
                         .map(Progetto::getNomeProgetto).orElse("");
 
-                ViewUtils.println("\nElenco delle chat private originate dal progetto '" + nomeProgettoSelezionato + "':");
+                ViewUtils.println(CostantiView.SUPERVISIONE_CHAT_ELENCO_CHAT + nomeProgettoSelezionato + "':");
                 ViewUtils.printSeparator();
                 String header = String.format("%-5s | %-20s | %-25s | %-18s | %s", "ID", "Data Creazione", "Partecipanti", "Canale Origine", "Messaggio Origine");
                 ViewUtils.println(ColorUtils.ANSI_BOLD + header + ColorUtils.ANSI_RESET);
@@ -288,8 +290,7 @@ public class CapoProgettoView implements View {
                 });
                 ViewUtils.printSeparator();
 
-                String promptChat = "Inserisci l'ID della chat da visualizzare (o usa /b per tornare alla selezione del progetto):";
-                int idChatSelezionata = InputHelper.chiediIdValido(promptChat, chatDaSupervisionare);
+                int idChatSelezionata = InputHelper.chiediIdValido(CostantiView.SUPERVISIONE_CHAT_INSERISCI_ID_CHAT, chatDaSupervisionare);
 
                 new ChatView(interazioneController, idChatSelezionata, TipoContestoChat.CHAT_PRIVATA, true, idUtenteLoggato).show();
 
@@ -298,25 +299,24 @@ public class CapoProgettoView implements View {
                 break;
             }
         } catch (CommandException e) {
-            ViewUtils.println("\nOperazione annullata.");
+            ViewUtils.println(CostantiView.OPERAZIONE_ANNULLATA);
         }
 
-        InputUtils.pressEnterToContinue("Premi Invio per tornare alla home...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
     private void handleAccediACanaliEChat() {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AREA COMUNICAZIONI ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Digita '/b' o '/back' per tornare alla Home Principale.");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AREA_COMUNICAZIONI + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.B_O_BACK_2);
             ViewUtils.printSeparator();
-            ViewUtils.println("1. Accedi ai Canali di Progetto");
-            ViewUtils.println("2. Accedi alle Chat Private");
+            ViewUtils.println(CostantiView.ACCEDI_A_CANALI_E_CHAT_OPZIONE_1);
+            ViewUtils.println(CostantiView.ACCEDI_A_CANALI_E_CHAT_OPZIONE_2);
             ViewUtils.printSeparator();
 
             try {
-                // Ora il prompt per l'input è più generico
-                int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 1, 2);
+                int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 1, 2);
 
                 switch (scelta) {
                     case 1:
@@ -334,17 +334,17 @@ public class CapoProgettoView implements View {
 
     private void handleAccessoCanaliProgetto() throws CommandException {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- ACCESSO AI CANALI DI PROGETTO ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per tornare al menu precedente.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.ACCESSO_AI_CANALI_DI_PROGETTO + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK_2);
         ViewUtils.printSeparator();
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
         if (mieiCanali.isEmpty()) {
-            ViewUtils.println("Non partecipi a nessun canale di progetto.");
+            ViewUtils.println(CostantiView.NO_PARTECIPAZIONE_A_CANALI);
             InputUtils.pressEnterToContinue("");
             return;
         }
-        String prompt = "Seleziona un canale per visualizzarne i messaggi:";
+        String prompt = CostantiView.SELEZIONA_CANALE_PER_MESSAGGI;
         int idCanaleSelezionato = selezionaCanale(mieiCanali, prompt);
         new ChatView(interazioneController, idCanaleSelezionato, TipoContestoChat.CANALE_PROGETTO, false, idUtenteLoggato).show();
     }
@@ -352,14 +352,14 @@ public class CapoProgettoView implements View {
     private void handleAccessoChatPrivate() throws CommandException {
         while (true) {
             ViewUtils.clearScreen();
-            ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AREA CHAT PRIVATE ---" + ColorUtils.ANSI_RESET);
-            ViewUtils.println("Digita '/b' o '/back' per tornare al menu precedente.");
+            ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AREA_CHAT_PRIVATE + ColorUtils.ANSI_RESET);
+            ViewUtils.println(CostantiView.B_O_BACK_2);
             ViewUtils.printSeparator();
-            ViewUtils.println("1. Visualizza le tue chat");
-            ViewUtils.println("2. Avvia una nuova chat da un messaggio di un canale");
+            ViewUtils.println(CostantiView.ACCEDI_CHAT_PRIVATE_OPZIONE_1);
+            ViewUtils.println(CostantiView.ACCEDI_CHAT_PRIVATE_OPZIONE_2);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange("Seleziona un'opzione: ", 1, 2);
+            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 1, 2);
 
             try {
                 switch (scelta) {
@@ -384,19 +384,19 @@ public class CapoProgettoView implements View {
      */
     private void handleVisualizzaMieChat() throws CommandException {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- LE TUE CHAT PRIVATE ---" + ColorUtils.ANSI_RESET);
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.LE_TUE_CHAT_PRIVATE + ColorUtils.ANSI_RESET);
         ViewUtils.printSeparator();
 
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<ChatPrivataDTO> mieChat = interazioneController.getMieChatPrivate(idUtenteLoggato);
 
         if (mieChat.isEmpty()) {
-            ViewUtils.println("Non hai nessuna chat privata attiva.");
-            InputUtils.pressEnterToContinue("Premi Invio per tornare indietro...");
+            ViewUtils.println(CostantiView.VISUALIZZA_CHAT_NO_CHAT);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
-        ViewUtils.println("Elenco delle tue conversazioni private:");
+        ViewUtils.println(CostantiView.VISUALIZZA_CHAT_ELENCO_CHAT);
         String header = String.format("%-5s | %-20s | %s", "ID", "Avviata il", "Conversazione con");
         ViewUtils.println(ColorUtils.ANSI_BOLD + header + ColorUtils.ANSI_RESET);
 
@@ -408,7 +408,7 @@ public class CapoProgettoView implements View {
         ViewUtils.printSeparator();
 
         // Aggiungiamo il tipo ChatPrivataDTO a InputHelper
-        int idChatSelezionata = InputHelper.chiediIdValido("Inserisci l'ID della chat da visualizzare: ", mieChat);
+        int idChatSelezionata = InputHelper.chiediIdValido(CostantiView.VISUALIZZA_CHAT_INSERISCI_ID_CHAT, mieChat);
 
         new ChatView(
                 interazioneController,
@@ -421,21 +421,20 @@ public class CapoProgettoView implements View {
 
     private void handleAvviaNuovaChatDaCanale() throws CommandException {
         ViewUtils.clearScreen();
-        ViewUtils.println(ColorUtils.ANSI_BOLD + "--- AVVIA NUOVA CHAT PRIVATA ---" + ColorUtils.ANSI_RESET);
-        ViewUtils.println("Digita '/b' o '/back' per tornare indietro in qualsiasi momento.");
+        ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.AVVIA_NUOVA_CHAT_PRIVATA + ColorUtils.ANSI_RESET);
+        ViewUtils.println(CostantiView.B_O_BACK_2);
         ViewUtils.printSeparator();
 
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
 
         if (mieiCanali.isEmpty()) {
-            ViewUtils.println("Devi partecipare ad almeno un canale per poter avviare una chat.");
-            InputUtils.pressEnterToContinue("Premi Invio per tornare indietro...");
+            ViewUtils.println(CostantiView.AVVIA_NUOVA_CHAT_NO_CANALI);
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
-        String promptCanale = "Seleziona il canale contenente il messaggio da cui partire:";
-        int idCanaleSelezionato = selezionaCanale(mieiCanali, promptCanale);
+        int idCanaleSelezionato = selezionaCanale(mieiCanali, CostantiView.AVVIA_NUOVA_CHAT_SELEZIONA_CANALE);
         int idMessaggioSelezionato = selezionaMessaggioDaCanale(idCanaleSelezionato, idUtenteLoggato);
 
         // Ora che abbiamo l'ID del messaggio, chiamiamo helper per avviare la chat
@@ -446,20 +445,20 @@ public class CapoProgettoView implements View {
 
         ViewActionHelper.avviaChatPrivataDaListaMessaggi(List.of(msgPlaceholder), idUtenteLoggato, this.interazioneController);
 
-        InputUtils.pressEnterToContinue("Premi Invio per tornare al menu precedente...");
+        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
     }
 
 
     private int selezionaProgetto(List<Progetto> progetti, String prompt) throws CommandException {
         ViewUtils.println(prompt);
-        progetti.forEach(p -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s", p.getIdProgetto(), p.getNomeProgetto())));
+        progetti.forEach(p -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME, p.getIdProgetto(), p.getNomeProgetto())));
         ViewUtils.printSeparator();
         return InputHelper.chiediIdValido("ID Progetto: ", progetti);
     }
 
     private int selezionaCanale(List<CanaleProgetto> canali, String prompt) throws CommandException {
         ViewUtils.println("\n" + prompt);
-        canali.forEach(c -> ViewUtils.println(String.format("  ID: %-5d | Nome: %s", c.getIdCanale(), c.getNomeCanale())));
+        canali.forEach(c -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME, c.getIdCanale(), c.getNomeCanale())));
         ViewUtils.printSeparator();
         return InputHelper.chiediIdValido("ID Canale: ", canali);
     }
@@ -513,8 +512,8 @@ public class CapoProgettoView implements View {
                     if (paginaCorrente > 1) {
                         paginaCorrente--;
                     } else {
-                        ViewUtils.println("Sei già alla prima pagina.");
-                        InputUtils.pressEnterToContinue("Premi Invio per continuare...");
+                        ViewUtils.println(CostantiView.PRIMA_PAGINA);
+                        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                     }
                     break;
                 default:
@@ -526,11 +525,11 @@ public class CapoProgettoView implements View {
                             return idSelezionato; // Successo! Restituiamo l'ID.
                         } else {
                             ViewUtils.println(ColorUtils.ANSI_RED + "ID non valido. Seleziona un ID dalla pagina corrente." + ColorUtils.ANSI_RESET);
-                            InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
+                            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
                         }
                     } catch (NumberFormatException e) {
-                        ViewUtils.println(ColorUtils.ANSI_RED + "Comando non riconosciuto. Riprova." + ColorUtils.ANSI_RESET);
-                        InputUtils.pressEnterToContinue("Premi Invio per riprovare...");
+                        ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.COMANDO_NON_RICONOSCIUTO + ColorUtils.ANSI_RESET);
+                        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
                     }
                     break;
             }

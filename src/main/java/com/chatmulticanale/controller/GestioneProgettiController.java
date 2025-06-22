@@ -7,6 +7,7 @@ import com.chatmulticanale.model.Progetto;
 import com.chatmulticanale.model.Utente;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 public class GestioneProgettiController {
@@ -91,8 +92,8 @@ public class GestioneProgettiController {
             return chatPrivataDAO.getChatDaSupervisionare(idProgetto, idCapoProgetto);
         } catch (SQLException e) {
             // Se il DAO lancia un'eccezione (es. Per permessi negati dalla SP),
-            // il controller restituisce null per segnalare l'errore alla View.
-            return null;
+            // il controller restituisce null (lista vuota) per segnalare l'errore alla View.
+            return Collections.emptyList();
         }
     }
 }
