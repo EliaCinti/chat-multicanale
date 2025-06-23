@@ -37,7 +37,17 @@ public class AmministrazioneView implements View {
             ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
+            int scelta;
+            try {
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
+            } catch (CommandException e) {
+                if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
+                    return e.getNavigazione();
+                }
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
+                continue;
+            }
             switch (scelta) {
                 case 1:
                     handlePromuoviUtente();
@@ -156,7 +166,7 @@ public class AmministrazioneView implements View {
                         ViewUtils.println(ColorUtils.ANSI_GREEN + CostantiView.RIASSEGNAZIONE_SUCCESSO + ColorUtils.ANSI_RESET);
                     } else {
                         ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.RIASSEGNAZIONE_ERRORE_2 + ColorUtils.ANSI_RESET);
-                        InputUtils.pressEnterToContinue("");
+                        InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                         return; // Interrompe l'intera operazione se una riassegnazione fallisce
                     }
                 }

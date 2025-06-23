@@ -92,7 +92,7 @@ public class ChatView {
                             paginaCorrente--;
                         } else {
                             ViewUtils.println(CostantiView.PRIMA_PAGINA);
-                            InputUtils.pressEnterToContinue("");
+                            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                         }
                         break;
                     case "i":

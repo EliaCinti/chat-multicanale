@@ -33,8 +33,17 @@ public class DipendenteView implements View {
             ViewUtils.println(CostantiView.HOME_DIPENDENTE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 1);
-
+            int scelta;
+            try {
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
+            } catch (CommandException e) {
+                if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
+                    return e.getNavigazione();
+                }
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
+                continue;
+            }
             switch (scelta) {
                 case 1:
                     handleAccediACanaliEChat();
@@ -229,7 +238,7 @@ public class DipendenteView implements View {
             if (messaggi.isEmpty() && paginaCorrente > 1) {
                 ViewUtils.println(CostantiView.NO_ALTRE_PAGINE);
                 paginaCorrente--;
-                InputUtils.pressEnterToContinue("");
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                 continue;
             } else if (messaggi.isEmpty()) {
                 ViewUtils.println(CostantiView.NO_MESSAGGIO_IN_CANALE);
@@ -269,7 +278,7 @@ public class DipendenteView implements View {
                             return idSelezionato; // Successo! Restituiamo l'ID.
                         } else {
                             ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.ID_NON_VALIDO_IN_PAGINA_CORRENTE + ColorUtils.ANSI_RESET);
-                            InputUtils.pressEnterToContinue("");
+                            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_CONTINUARE);
                         }
                     } catch (NumberFormatException e) {
                         ViewUtils.println(ColorUtils.ANSI_RED + CostantiView.COMANDO_NON_RICONOSCIUTO + ColorUtils.ANSI_RESET);

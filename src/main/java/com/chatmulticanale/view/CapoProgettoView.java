@@ -47,8 +47,17 @@ public class CapoProgettoView implements View {
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
-
+            int scelta;
+            try {
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
+            } catch (CommandException e) {
+                if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
+                    return e.getNavigazione();
+                }
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
+                continue;
+            }
             switch (scelta) {
                 case 1:
                     handleVisualizzaMieiProgetti();
@@ -133,7 +142,7 @@ public class CapoProgettoView implements View {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
                 ViewUtils.println(CostantiView.NO_PROGETTI);
-                InputUtils.pressEnterToContinue("");
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
                 return;
             }
             progettoLoop:
@@ -186,7 +195,7 @@ public class CapoProgettoView implements View {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
                 ViewUtils.println(CostantiView.NO_PROGETTI);
-                InputUtils.pressEnterToContinue("");
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
                 return;
             }
             progettoLoop:
@@ -244,7 +253,7 @@ public class CapoProgettoView implements View {
             List<Progetto> mieiProgetti = gestioneController.getProgettiDiCuiSonoResponsabile(idUtenteLoggato);
             if (mieiProgetti.isEmpty()) {
                 ViewUtils.println(CostantiView.NO_PROGETTI);
-                InputUtils.pressEnterToContinue("");
+                InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
                 return;
             }
 
@@ -341,7 +350,7 @@ public class CapoProgettoView implements View {
         List<CanaleProgetto> mieiCanali = interazioneController.getCanaliUtente(idUtenteLoggato);
         if (mieiCanali.isEmpty()) {
             ViewUtils.println(CostantiView.NO_PARTECIPAZIONE_A_CANALI);
-            InputUtils.pressEnterToContinue("");
+            InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
         String prompt = CostantiView.SELEZIONA_CANALE_PER_MESSAGGI;

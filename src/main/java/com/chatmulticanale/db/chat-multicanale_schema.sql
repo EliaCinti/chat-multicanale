@@ -613,7 +613,7 @@ BEGIN
         Cognome_Utente,
         Ruolo
     FROM Utente 
-    WHERE Username = p_Username;
+    WHERE BINARY Username = BINARY p_Username;
 END$$
 
 DELIMITER ;
