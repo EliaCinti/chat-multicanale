@@ -48,25 +48,23 @@ Per eseguire il progetto in locale, segui questi passaggi:
 
 **2. Database Setup:**
    - Crea un nuovo schema (database) nel tuo server MySQL (es. `mydb`).
-   - Esegui lo script SQL completo fornito nel repository (`il_tuo_file.sql`). Questo creerà le tabelle, i trigger, le Stored Procedure e gli utenti di database con i privilegi corretti.
-   - **Importante:** Lo script inizializza il database con un utente **Amministratore** (`admin` / `superpassword123`) necessario per il primo avvio.
+     - Importa lo script `src/main/java/com/chatmulticanale/db/chat-multicanale_schema.sql` nel tuo database.
+     Puoi farlo ad esempio con:
+     ```bash
+     mysql -u root -p mydb < src/main/java/com/chatmulticanale/db/chat-multicanale_schema.sql
+     ```
+     Lo script crea tutte le tabelle, le trigger e le stored procedure necessarie, oltre agli utenti di database con i relativi privilegi.
+   - **Default admin:** al termine dell'import troverai un utente applicativo predefinito `admin` con password `superpassword123` (hashato nello script) per eseguire il primo login.
 
 **3. Configurazione dell'Applicazione:**
    - Naviga in `src/main/resources/`.
-   - Rinomina il file `config.properties.template` in `config.properties`.
-   - Modifica il file `config.properties` con le credenziali del tuo database MySQL (URL, username e password).
+   - Apri `config.properties` e configura i parametri di connessione JDBC (URL, username e password) in base alla tua installazione MySQL.
 
-**4. Esecuzione:**
-   - Apri un terminale nella directory principale del progetto.
-   - Compila il progetto con Maven:
-     ```bash
-     mvn clean install
-     ```
-   - Esegui l'applicazione:
-     ```bash
-     java -jar target/chatmulticanale-1.0-SNAPSHOT.jar 
-     ```
-     *(il nome del file .jar potrebbe variare, controlla nella cartella `target`)*
+## 📝 Utilizzo
+Una volta avviato il programma comparirà la schermata di login da terminale.
+Per il primo accesso utilizza le credenziali dell'amministratore di default (`admin` / `superpassword123`).
+Il menu e i comandi varieranno a seconda del ruolo con cui si effettua l'accesso.
+
 
 ---
 
