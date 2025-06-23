@@ -21,7 +21,8 @@ public class InputHelper {
      *
      * @param prompt Il messaggio da mostrare all'utente.
      * @param listaPerControllo La lista di oggetti su cui controllare l'esistenza dell'ID.
-     *                          Gli oggetti devono essere di tipo Utente, Progetto o ProgettoResponsabileDTO.
+     *                          Gli oggetti devono essere di tipo Utente, Progetto, ProgettoResponsabileDTO,
+     *                          CanaleProgetto o ChatPrivataDTO.
      * @return L'ID valido inserito dall'utente.
      * @throws CommandException se l'utente inserisce un comando di navigazione (es. /b, /back).
      */

@@ -203,7 +203,7 @@ public class MessaggioDAO {
             throw new SQLException("Impossibile eseguire inviaMessaggioConCitazioneInChat: connessione al database assente.");
         }
 
-        try (CallableStatement stmt = DatabaseConnector.getConnection().prepareCall(CostantiMessaggioDAO.SP_INVIA_MESSAGGIO_CHAT_CITAZIONE)) {
+        try (CallableStatement stmt = conn.prepareCall(CostantiMessaggioDAO.SP_INVIA_MESSAGGIO_CHAT_CITAZIONE)) {
             stmt.setInt(1, idChat);
             stmt.setInt(2, idMittente);
             stmt.setString(3, contenuto);
