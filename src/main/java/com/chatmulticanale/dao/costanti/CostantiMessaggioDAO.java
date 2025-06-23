@@ -10,6 +10,7 @@ public class CostantiMessaggioDAO {
     public static final String CONTENUTO = "Contenuto";
     public static final String TIMESTAMP = "Timestamp";
     public static final String MITTENTE_USERNAME = "Mittente_Username";
+    public static final String MESSAGGIO_CITATO = "Messaggio_Citato";
 
     // --- Stored Procedures ---
     public static final String SP_GET_MESSAGGI_CANALE = "{CALL sp_UT2_VisualizzaMessaggiCanale(?, ?, ?, ?)}";

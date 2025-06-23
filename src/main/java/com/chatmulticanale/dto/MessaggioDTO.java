@@ -8,6 +8,7 @@ public class MessaggioDTO {
     private String contenuto;
     private Timestamp timestamp;
     private String usernameMittente;
+    private Integer idMessaggioCitato;
 
     // --- GETTER E SETTER ---
 
@@ -41,5 +42,13 @@ public class MessaggioDTO {
 
     public void setUsernameMittente(String usernameMittente) {
         this.usernameMittente = usernameMittente;
+    }
+
+    public Integer getIdMessaggioCitato() {
+        return idMessaggioCitato;
+    }
+
+    public void setIdMessaggioCitato(Integer idMessaggioCitato) {
+        this.idMessaggioCitato = idMessaggioCitato;
     }
 }

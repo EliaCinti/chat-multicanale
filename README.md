@@ -4,33 +4,6 @@ Questo repository contiene l'implementazione di un'applicazione Java di chat mul
 
 ---
 
-## ✨ Funzionalità
-
-Il sistema è progettato per gestire le interazioni tra utenti con ruoli diversi (Amministratore, Capo Progetto, Dipendente) all'interno di canali di comunicazione legati a progetti aziendali.
-
-### Funzionalità Implementate
-- [x] **Autenticazione Sicura:** Sistema di Login e Sign Up con hashing delle password tramite **BCrypt**.
-- [x] **Architettura di Navigazione Robusta:** Un sistema a Stack che gestisce il flusso tra le viste, permettendo di tornare indietro, fare logout e uscire in modo controllato.
-- [x] **Input Utente a Prova di Errore:** Gestione centralizzata dell'input che previene dati vuoti e conflitti tra dati e comandi di navigazione (es. `/b` per indietro).
-- [x] **Gestione Ruolo Amministratore:**
-    - [x] **Promozione Utente (AM1):** L'admin può visualizzare una lista di dipendenti e promuoverli a Capo Progetto.
-    - [x] **Rimozione Ruolo (AM2):** Implementata una procedura guidata sicura che forza la riassegnazione dei progetti prima del degrado del ruolo, come da regola di business RA3.
-    - [x] **Assegnazione Progetti (AM3):** L'admin può assegnare progetti senza responsabile a un Capo Progetto.
-    - [x] **Creazione Progetti:** Aggiunta una funzionalità di supporto per permettere all'admin di creare nuovi progetti, rendendo il sistema auto-consistente.
-
-### Funzionalità da Implementare
-- [ ] **Gestione Ruolo Capo Progetto:**
-    - [ ] Creazione di canali di progetto (CP1).
-    - [ ] Aggiunta e rimozione di utenti dai canali (CP2, CP3).
-    - [ ] Supervisione delle chat private (CP4).
-- [ ] **Gestione Ruolo Dipendente:**
-    - [ ] Visualizzazione di canali e messaggi (UT2, UT6).
-    - [ ] Invio di messaggi in canali e chat private (UT1, UT4).
-    - [ ] Creazione di chat private (UT3).
-- [ ] Implementazione completa delle operazioni rimanenti (AM4, etc.).
-
----
-
 ## 🏗️ Architettura e Design Pattern
 
 La struttura del progetto è stata progettata per essere modulare, manutenibile e scalabile, seguendo principi di software design moderni.
@@ -117,7 +90,7 @@ Per eseguire il progetto in locale, segui questi passaggi:
         └── resources/
             └── config.properties               # File di configurazione del database
 
-
+```
 ---
 
 ## 👤 Autore

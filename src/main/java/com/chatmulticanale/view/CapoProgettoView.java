@@ -342,8 +342,6 @@ public class CapoProgettoView implements View {
         }
     }
 
-
-
     private int selezionaProgetto(List<Progetto> progetti, String prompt) throws CommandException {
         ViewUtils.println(prompt);
         progetti.forEach(p -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME, p.getIdProgetto(), p.getNomeProgetto())));

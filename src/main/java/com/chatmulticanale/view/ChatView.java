@@ -67,6 +67,11 @@ public class ChatView {
                             ColorUtils.ANSI_RESET,
                             msg.getContenuto());
                     ViewUtils.println(riga);
+                    if (msg.getIdMessaggioCitato() != null) {
+                        String citazione = String.format("    -> cita messaggio [ID %d]",
+                                msg.getIdMessaggioCitato());
+                        ViewUtils.println(ColorUtils.ANSI_CYAN + citazione + ColorUtils.ANSI_RESET);
+                    }
                 }
             }
 

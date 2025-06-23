@@ -40,7 +40,7 @@ public class WelcomeView implements View {
             ViewUtils.println("0. Esci dall'applicazione");
             int scelta;
             try {
-                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 2);
             } catch (CommandException e) {
                 if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
                     return e.getNavigazione();

@@ -52,6 +52,12 @@ public class MessaggioDAO {
                     dto.setContenuto(rs.getString(CostantiMessaggioDAO.CONTENUTO));
                     dto.setTimestamp(rs.getTimestamp(CostantiMessaggioDAO.TIMESTAMP));
                     dto.setUsernameMittente(rs.getString(CostantiMessaggioDAO.MITTENTE_USERNAME));
+                    int citato = rs.getInt(CostantiMessaggioDAO.MESSAGGIO_CITATO);
+                    if (rs.wasNull()) {
+                        dto.setIdMessaggioCitato(null);
+                    } else {
+                        dto.setIdMessaggioCitato(citato);
+                    }
                     messaggi.add(dto);
                 }
             }
@@ -95,6 +101,12 @@ public class MessaggioDAO {
                     dto.setContenuto(rs.getString(CostantiMessaggioDAO.CONTENUTO));
                     dto.setTimestamp(rs.getTimestamp(CostantiMessaggioDAO.TIMESTAMP));
                     dto.setUsernameMittente(rs.getString(CostantiMessaggioDAO.MITTENTE_USERNAME));
+                    int citato = rs.getInt(CostantiMessaggioDAO.MESSAGGIO_CITATO);
+                    if (rs.wasNull()) {
+                        dto.setIdMessaggioCitato(null);
+                    } else {
+                        dto.setIdMessaggioCitato(citato);
+                    }
                     messaggi.add(dto);
                 }
             }

@@ -31,7 +31,7 @@ public class DipendenteView implements View {
 
             int scelta;
             try {
-                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 1);
             } catch (CommandException e) {
                 if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
                     return e.getNavigazione();
@@ -69,11 +69,9 @@ public class DipendenteView implements View {
                 switch (scelta) {
                     case 1:
                         comunicazioneHelper.handleAccessoCanaliProgetto(idUtente);
-                        //handleAccessoCanaliProgetto();
                         break;
                     case 2:
                         comunicazioneHelper.handleAccessoChatPrivate(idUtente);
-                        //handleAccessoChatPrivate();
                         break;
                     default:
                 }
