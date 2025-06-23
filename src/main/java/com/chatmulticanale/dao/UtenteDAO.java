@@ -4,7 +4,6 @@ import com.chatmulticanale.dao.costanti.CostantiUtenteDAO;
 import com.chatmulticanale.model.Ruolo;
 import com.chatmulticanale.model.Utente;
 import com.chatmulticanale.utils.DatabaseConnector;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,19 +12,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * DAO per l'entità Utente. Gestisce l'accesso ai dati degli utenti nel database.
+ * DAO per l'entità {@link Utente}. Gestisce l'accesso ai dati degli utenti nel database.
+ * Offre metodi per creare, leggere e aggiornare informazioni sugli utenti,
+ * inclusa la gestione dei ruoli e delle membership nei canali.
+ * Utilizza comandi SQL e Stored Procedures definite in {@link CostantiUtenteDAO}
+ * e connessioni fornite da {@link DatabaseConnector}.
  */
 public class UtenteDAO {
-    // Istanza del logger per questa classe
     private static final Logger logger = Logger.getLogger(UtenteDAO.class.getName());
 
     /**
-     * Inserisce un nuovo utente nel database usando un comando INSERT diretto,
-     * come consentito dai privilegi documentati per il ruolo applicativo.
-     * Questo metodo non usa una Stored Procedure.
+     * Inserisce un nuovo utente nel database tramite INSERT diretto.
+     * Non utilizza Stored Procedure, rispettando i privilegi documentati.
      *
-     * @param nuovoUtente L'oggetto Utente con tutti i dati da salvare.
-     * @throws SQLException Se l'username esiste già (violazione del vincolo UNIQUE) o per altri errori DB.
+     * @param nuovoUtente oggetto {@link Utente} contenente username, password hash, nome, cognome e ruolo
+     * @throws SQLException se la connessione non è disponibile o l'username viola vincoli UNIQUE
+     * @see CostantiUtenteDAO#INSERT_UTENTE_QUERY
+     * @see DatabaseConnector#getConnection()
      */
     public void creaNuovoUtente(Utente nuovoUtente) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -50,15 +53,14 @@ public class UtenteDAO {
     }
 
     /**
-     * Recupera un utente dal database basandosi sul suo username.
-     * <p>
-     * Questo metodo chiama la Stored Procedure {@code sp_LG1_OttieniUtenteDaUsername}.
-     * Non verifica la password, ma recupera l'hash per una verifica sicura
-     * a livello di applicazione (es. Nel LoginController).
-     * In caso di errore SQL o di connessione assente, logga l'errore e restituisce null.
+     * Recupera un utente dal database in base allo username.
+     * Utilizza la Stored Procedure {@code sp_LG1_OttieniUtenteDaUsername}.
+     * Non verifica la password, ma restituisce l'hash per la validazione esterna.
      *
-     * @param username Lo username dell'utente da cercare.
-     * @return Un oggetto {@link Utente} completo di tutti i suoi dati se trovato, altrimenti {@code null}.
+     * @param username username dell'utente da recuperare
+     * @return oggetto {@link Utente} popolato se trovato, {@code null} altrimenti
+     * @see CostantiUtenteDAO#SP_GET_UTENTE_BY_USERNAME
+     * @see DatabaseConnector#getConnection()
      */
     public Utente getUtenteByUsername(String username) {
         Connection conn = DatabaseConnector.getConnection();
@@ -93,14 +95,12 @@ public class UtenteDAO {
     }
 
     /**
-     * Modifica il ruolo di un utente esistente in 'CapoProgetto'.
-     * <p>
-     * Questo metodo chiama la Stored Procedure {@code sp_AM1_AssegnaRuoloCapoProgetto}.
-     * Se la connessione al database fallisce o si verifica un errore SQL durante
-     * l'operazione, viene lanciata una {@code SQLException} per notificare il chiamante.
+     * Promuove un utente al ruolo di 'CapoProgetto'.
+     * Utilizza la Stored Procedure {@code sp_AM1_AssegnaRuoloCapoProgetto}.
      *
-     * @param idUtente L'ID dell'utente da promuovere.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idUtente identificativo dell'utente da promuovere
+     * @throws SQLException se la connessione non è disponibile o si verifica un errore SQL
+     * @see CostantiUtenteDAO#SP_ASSEGNA_RUOLO_CAPOPROGETTO
      */
     public void assegnaRuoloCapoProgetto(int idUtente) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -117,14 +117,12 @@ public class UtenteDAO {
     }
 
     /**
-     * Modifica il ruolo di un utente 'CapoProgetto' riportandolo a 'Dipendente'.
-     * <p>
-     * Questo metodo chiama la Stored Procedure {@code sp_AM2_RimuoviRuoloCapoProgetto}.
-     * Se la connessione al database fallisce o si verifica un errore SQL durante
-     * l'operazione, viene lanciata una {@code SQLException} per notificare il chiamante.
+     * Degrada un utente dal ruolo di 'CapoProgetto' a 'Dipendente'.
+     * Utilizza la Stored Procedure {@code sp_AM2_RimuoviRuoloCapoProgetto}.
      *
-     * @param idUtente L'ID dell'utente da "degradare".
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idUtente identificativo dell'utente da degradare
+     * @throws SQLException se la connessione non è disponibile o si verifica un errore SQL
+     * @see CostantiUtenteDAO#SP_RIMUOVI_RUOLO_CAPOPROGETTO
      */
     public void rimuoviRuoloCapoProgetto(int idUtente) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -141,14 +139,11 @@ public class UtenteDAO {
     }
 
     /**
-     * Recupera una lista di tutti gli utenti con il ruolo 'Dipendente'.
-     * <p>
-     * Questo metodo esegue una query diretta per selezionare gli utenti.
-     * In caso di errore SQL o di connessione assente, logga l'errore e
-     * restituisce una lista vuota per garantire che il chiamante non riceva un {@code null}.
+     * Recupera tutti gli utenti con ruolo 'Dipendente'.
+     * Esegue una query diretta e restituisce lista vuota in caso di errore.
      *
-     * @return Una {@code List<Utente>} contenente tutti i dipendenti trovati.
-     *         La lista sarà vuota se non ci sono dipendenti o in caso di errore.
+     * @return lista di {@link Utente} con ruolo dipendente, o lista vuota se nessuno o errore
+     * @see CostantiUtenteDAO#SELECT_DIPENDENTI_QUERY
      */
     public List<Utente> getTuttiDipendenti() {
         Connection conn = DatabaseConnector.getConnection();
@@ -174,13 +169,11 @@ public class UtenteDAO {
     }
 
     /**
-     * Recupera dal database una lista di tutti gli utenti con il ruolo 'CapoProgetto'.
-     * <p>
-     * Esegue una query diretta per selezionare gli utenti. In caso di errore SQL o di
-     * connessione assente, logga l'errore e restituisce una lista vuota.
+     * Recupera tutti gli utenti con ruolo 'CapoProgetto'.
+     * Esegue una query diretta e restituisce lista vuota in caso di errore.
      *
-     * @return Una {@code List<Utente>} contenente tutti i Capi Progetto.
-     *         La lista sarà vuota se non ce ne sono o in caso di errore.
+     * @return lista di {@link Utente} con ruolo capo progetto, o lista vuota se nessuno o errore
+     * @see CostantiUtenteDAO#SELECT_CAPIPROGETTO_QUERY
      */
     public List<Utente> getTuttiCapiProgetto() {
         Connection conn = DatabaseConnector.getConnection();
@@ -207,14 +200,12 @@ public class UtenteDAO {
     }
 
     /**
-     * Recupera una lista di tutti gli utenti con ruolo 'Dipendente' che non sono
-     * ancora membri di un canale specifico.
-     * <p>
-     * Utile per popolare le liste di utenti che possono essere aggiunti a un canale.
-     * In caso di errore SQL o di connessione assente, logga l'errore e restituisce una lista vuota.
+     * Recupera dipendenti non ancora membri di un dato canale.
+     * Utile per aggiunte a canali di progetto.
      *
-     * @param idCanale L'ID del canale da cui escludere i membri attuali.
-     * @return Una {@code List<Utente>} di dipendenti che possono essere aggiunti al canale.
+     * @param idCanale identificativo del canale da escludere
+     * @return lista di {@link Utente} dipendenti non membri, o lista vuota se errore
+     * @see CostantiUtenteDAO#SELECT_DIPENDENTI_FUORI_DA_CANALE
      */
     public List<Utente> getDipendentiNonInCanale(int idCanale) {
         Connection conn = DatabaseConnector.getConnection();
@@ -241,14 +232,12 @@ public class UtenteDAO {
     }
 
     /**
-     * Recupera una lista di tutti gli utenti con ruolo 'Dipendente' che sono
-     * attualmente membri di un canale specifico.
-     * <p>
-     * Utile per popolare le liste di utenti che possono essere rimossi da un canale.
-     * In caso di errore SQL o di connessione assente, logga l'errore e restituisce una lista vuota.
+     * Recupera dipendenti attualmente membri di un dato canale.
+     * Utile per rimozioni da canali di progetto.
      *
-     * @param idCanale L'ID del canale di cui elencare i membri.
-     * @return Una {@code List<Utente>} di dipendenti presenti nel canale.
+     * @param idCanale identificativo del canale
+     * @return lista di {@link Utente} dipendenti membri, o lista vuota se errore
+     * @see CostantiUtenteDAO#SELECT_DIPENDENTI_IN_CANALE
      */
     public List<Utente> getDipendentiInCanale(int idCanale) {
         Connection conn = DatabaseConnector.getConnection();

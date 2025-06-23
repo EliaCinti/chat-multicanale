@@ -10,6 +10,13 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Controller per la gestione delle operazioni sui progetti e sui relativi canali.
+ * Fornisce metodi per creare e gestire canali di progetto, amministrare i membri
+ * e supervisionare le chat private all'interno di un progetto.
+ * <p>
+ * Utilizzato dalle viste dedicate ai Capi Progetto.
+ */
 public class GestioneProgettiController {
 
     private final ProgettoDAO progettoDAO = new ProgettoDAO();
@@ -19,22 +26,25 @@ public class GestioneProgettiController {
     private final ChatPrivataDAO chatPrivataDAO = new ChatPrivataDAO();
 
     /**
-     * Recupera la lista dei progetti di cui un Capo Progetto specifico è responsabile.
-     * @param idCapoProgetto L'ID dell'utente loggato.
-     * @return Una lista di oggetti Progetto.
+     * Restituisce la lista dei progetti di cui un Capo Progetto è responsabile.
+     *
+     * @param idCapoProgetto identificativo dell'utente con ruolo Capo Progetto
+     * @return lista di {@link Progetto} gestiti dal capo progetto
+     * @see ProgettoDAO#trovaProgettiPerResponsabile(int)
      */
     public List<Progetto> getProgettiDiCuiSonoResponsabile(int idCapoProgetto) {
         return progettoDAO.trovaProgettiPerResponsabile(idCapoProgetto);
     }
 
     /**
-     * Gestisce la logica di business per la creazione di un nuovo canale.
+     * Crea un nuovo canale all'interno di un progetto.
      *
-     * @param nomeCanale Il nome del nuovo canale.
-     * @param descrizioneCanale La descrizione del nuovo canale.
-     * @param idProgetto L'ID del progetto a cui appartiene.
-     * @param idCreatore L'ID del Capo Progetto che lo crea.
-     * @return true se la creazione ha successo, false altrimenti.
+     * @param nomeCanale        nome del canale da creare
+     * @param descrizioneCanale descrizione del canale
+     * @param idProgetto        identificativo del progetto di appartenenza
+     * @param idCreatore        identificativo del Capo Progetto creatore del canale
+     * @return {@code true} se il canale è stato creato correttamente, {@code false} in caso di errore SQL
+     * @see CanaleProgettoDAO#creaNuovoCanale(CanaleProgetto, int, int)
      */
     public boolean creaNuovoCanalePerProgetto(String nomeCanale, String descrizioneCanale, int idProgetto, int idCreatore) {
         CanaleProgetto canale = new CanaleProgetto();
@@ -50,14 +60,37 @@ public class GestioneProgettiController {
         }
     }
 
+    /**
+     * Recupera tutti i canali associati a un determinato progetto.
+     *
+     * @param idProgetto identificativo del progetto
+     * @return lista di {@link CanaleProgetto} appartenenti al progetto
+     * @see CanaleProgettoDAO#getCanaliPerProgetto(int)
+     */
     public List<CanaleProgetto> getCanaliDelProgetto(int idProgetto) {
         return canaleDAO.getCanaliPerProgetto(idProgetto);
     }
 
+    /**
+     * Restituisce i dipendenti che non partecipano ancora a un dato canale.
+     * Utile per mostrare chi è aggiungibile.
+     *
+     * @param idCanale identificativo del canale
+     * @return lista di {@link Utente} non ancora presenti nel canale
+     * @see UtenteDAO#getDipendentiNonInCanale(int)
+     */
     public List<Utente> getDipendentiAggiungibili(int idCanale) {
         return utenteDAO.getDipendentiNonInCanale(idCanale);
     }
 
+    /**
+     * Aggiunge un dipendente a un canale di progetto.
+     *
+     * @param idCanale identificativo del canale
+     * @param idUtente identificativo del dipendente da aggiungere
+     * @return {@code true} se l'aggiunta avviene con successo, {@code false} in caso di errore SQL
+     * @see PartecipaCanaleDAO#aggiungiUtenteACanale(int, int)
+     */
     public boolean aggiungiDipendenteACanale(int idCanale, int idUtente) {
         try {
             partecipaDAO.aggiungiUtenteACanale(idCanale, idUtente);
@@ -67,10 +100,25 @@ public class GestioneProgettiController {
         }
     }
 
+    /**
+     * Recupera la lista dei dipendenti attualmente partecipanti a un canale.
+     *
+     * @param idCanale identificativo del canale
+     * @return lista di {@link Utente} membri del canale
+     * @see UtenteDAO#getDipendentiInCanale(int)
+     */
     public List<Utente> getDipendentiDelCanale(int idCanale) {
         return utenteDAO.getDipendentiInCanale(idCanale);
     }
 
+    /**
+     * Rimuove un dipendente da un canale di progetto.
+     *
+     * @param idCanale identificativo del canale
+     * @param idUtente identificativo del dipendente da rimuovere
+     * @return {@code true} se la rimozione è avvenuta con successo, {@code false} in caso di errore SQL
+     * @see PartecipaCanaleDAO#rimuoviUtenteDaCanale(int, int)
+     */
     public boolean rimuoviDipendenteDaCanale(int idCanale, int idUtente) {
         try {
             partecipaDAO.rimuoviUtenteDaCanale(idCanale, idUtente);
@@ -81,11 +129,13 @@ public class GestioneProgettiController {
     }
 
     /**
-     * Recupera le chat private di un progetto per la supervisione.
+     * Recupera le chat private di un progetto per consentire la supervisione.
+     * In caso di errore (es. permessi negati o errore DB), restituisce lista vuota.
      *
-     * @param idProgetto L'ID del progetto.
-     * @param idCapoProgetto L'ID dell'utente che richiede la supervisione.
-     * @return Una lista di {@link ChatSupervisioneDTO} o null in caso di errore di autorizzazione/DB.
+     * @param idProgetto     identificativo del progetto di riferimento
+     * @param idCapoProgetto identificativo dell'utente supervisore
+     * @return lista di {@link ChatSupervisioneDTO} contenenti i messaggi da supervisionare
+     * @see ChatPrivataDAO#getChatDaSupervisionare(int, int)
      */
     public List<ChatSupervisioneDTO> getChatPrivateDaSupervisionare(int idProgetto, int idCapoProgetto) {
         try {

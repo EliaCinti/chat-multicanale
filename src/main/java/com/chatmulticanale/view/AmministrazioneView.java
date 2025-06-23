@@ -12,16 +12,31 @@ import com.chatmulticanale.view.navigation.View;
 import java.util.List;
 
 /**
- * Rappresenta la schermata principale (Home) per un utente con ruolo Amministratore.
- * Fornisce accesso a tutte le funzionalità di gestione del sistema.
+ * Schermata principale per l'utente amministratore.
+ * <p>
+ * Espone un menu di gestione del sistema con opzioni per promuovere utenti,
+ * degradare capi progetto, assegnare e riassegnare progetti e aggiungere nuovi progetti.
+ * Gestisce l'input utente e delega la logica di business al {@link AmministrazioneController}.
  */
 public class AmministrazioneView implements View {
     private final AmministrazioneController adminController;
 
+    /**
+     * Costruisce la vista passando il controller di amministrazione.
+     *
+     * @param controller controller per eseguire le operazioni di business
+     */
     public AmministrazioneView(AmministrazioneController controller) {
         this.adminController = controller;
     }
-
+    /**
+     * Mostra il menu principale e gestisce il ciclo di interazione finché l'utente non effettua logout.
+     *<p>
+     * Ogni scelta richiama un handler dedicato per eseguire l'azione selezionata.
+     * Gestisce anche i comandi di navigazione lanciati come {@link CommandException}.
+     *
+     * @return navigazione successiva (logout) al termine del ciclo
+     */
     @Override
     public Navigazione show() {
         while (true) {
@@ -37,40 +52,33 @@ public class AmministrazioneView implements View {
             ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta;
             try {
-                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
+                int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
+                switch (scelta) {
+                    case 1 -> handlePromuoviUtente();
+                    case 2 -> handleDegradaCapoProgetto();
+                    case 3 -> handleAssegnaResponsabilita();
+                    case 4 -> handleRiassegnaProgetto();
+                    case 5 -> handleAggiungiProgetto();
+                    case 0 -> {
+                        SessionManager.getInstance().logout();
+                        return Navigazione.logout();
+                    }
+                }
             } catch (CommandException e) {
                 if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
                     return e.getNavigazione();
                 }
-                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida." + ColorUtils.ANSI_RESET);
                 InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
-                continue;
-            }
-            switch (scelta) {
-                case 1:
-                    handlePromuoviUtente();
-                    break;
-                case 2:
-                    handleDegradaCapoProgetto();
-                    break;
-                case 3:
-                    handleAssegnaResponsabilita();
-                    break;
-                case 4:
-                    handleRiassegnaProgetto();
-                    break;
-                case 5:
-                    handleAggiungiProgetto();
-                    break;
-                case 0:
-                    SessionManager.getInstance().logout();
-                    return Navigazione.logout();
             }
         }
     }
 
+    /**
+     * Mostra la lista di dipendenti e gestisce la promozione di un utente a Capo Progetto.
+     * Gestisce la validazione dell'ID tramite {@link InputHelper} e comunica l'esito all'utente.
+     */
     private void handlePromuoviUtente() {
         ViewUtils.clearScreen();
         ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.PROMUOVI_UTENTE + ColorUtils.ANSI_RESET);
@@ -112,8 +120,8 @@ public class AmministrazioneView implements View {
     }
 
     /**
-     * Gestisce il flusso guidato e sicuro per la rimozione del ruolo di Capo Progetto,
-     * forzando la riassegnazione delle responsabilità come da regola aziendale RA3.
+     * Gestisce il flusso guidato per degradare un Capo Progetto.
+     * Assicura la riassegnazione dei progetti secondo le regole aziendali, quindi esegue il downgrade finale.
      */
     private void handleDegradaCapoProgetto() {
         ViewUtils.clearScreen();
@@ -191,7 +199,8 @@ public class AmministrazioneView implements View {
     }
 
     /**
-     * Gestisce il flusso per l'aggiunta di un nuovo progetto.
+     * Gestisce l'aggiunta di un nuovo progetto richiedendo nome e descrizione.
+     * Comunica il risultato dell'operazione all'utente.
      */
     private void handleAggiungiProgetto() {
         ViewUtils.clearScreen();
@@ -217,8 +226,7 @@ public class AmministrazioneView implements View {
     }
 
     /**
-     * Gestisce il flusso per assegnare un progetto non assegnato a un Capo Progetto (AM3).
-     * Riutilizza il metodo helper 'chiediIdValido' per una validazione dell'input robusta.
+     * Gestisce l'assegnazione iniziale di un progetto non assegnato a un Capo Progetto (AM3).
      */
     private void handleAssegnaResponsabilita() {
         ViewUtils.clearScreen();
@@ -270,8 +278,7 @@ public class AmministrazioneView implements View {
     }
 
     /**
-     * Gestisce il flusso guidato per riassegnare un progetto da un Capo Progetto a un altro (AM4).
-     * Esclude il responsabile attuale dalla lista dei nuovi candidati.
+     * Gestisce la riassegnazione di un progetto da un Capo Progetto a un altro (AM4).
      */
     private void handleRiassegnaProgetto() {
         ViewUtils.clearScreen();

@@ -4,7 +4,6 @@ import com.chatmulticanale.dao.costanti.CostantiCanaleProgettoDAO;
 import com.chatmulticanale.dao.costanti.CostantiProgettoDAO;
 import com.chatmulticanale.model.CanaleProgetto;
 import com.chatmulticanale.utils.DatabaseConnector;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,19 +11,30 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * DAO per la gestione dei canali di progetto nel database.
+ * Fornisce metodi per creare nuovi canali, recuperare canali di un progetto
+ * e ottenere i canali a cui partecipa un utente.
+ * <p>
+ * Utilizza Stored Procedures definite in {@link CostantiCanaleProgettoDAO}
+ * e query SQL definite in {@link CostantiProgettoDAO}.
+ * Gestisce la connessione tramite {@link DatabaseConnector}.
+ */
 public class CanaleProgettoDAO {
 
     private static final Logger logger = Logger.getLogger(CanaleProgettoDAO.class.getName());
 
     /**
-     * Inserisce un nuovo canale nel database e aggiunge automaticamente il creatore come partecipante,
-     * utilizzando la Stored Procedure sp_CP1_CreaCanaleProgetto.
-     * La SP gestisce entrambe le operazioni in una transazione.
+     * Crea un nuovo canale di progetto e aggiunge automaticamente il creatore come partecipante.
+     * La Stored Procedure {@code sp_CP1_CreaCanaleProgetto} esegue entrambe le operazioni
+     * in un'unica transazione.
      *
-     * @param nuovoCanale L'oggetto CanaleProgetto contenente nome e descrizione.
-     * @param idProgetto L'ID del progetto a cui associare il canale.
-     * @param idUtenteCreatore L'ID del Capo Progetto che sta creando il canale.
-     * @throws SQLException se si verifica un errore durante l'esecuzione della Stored Procedure.
+     * @param nuovoCanale       l'oggetto {@link CanaleProgetto} contenente nome e descrizione del canale
+     * @param idProgetto        identificativo del progetto a cui associare il canale
+     * @param idUtenteCreatore  identificativo del capo progetto creatore del canale
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL durante l'esecuzione
+     * @see CostantiCanaleProgettoDAO#SP_CREA_CANALE
+     * @see DatabaseConnector#getConnection()
      */
     public void creaNuovoCanale(CanaleProgetto nuovoCanale, int idProgetto, int idUtenteCreatore) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -47,10 +57,12 @@ public class CanaleProgettoDAO {
     }
 
     /**
-     * Recupera tutti i canali associati a un dato progetto.
+     * Recupera tutti i canali associati a un progetto.
      *
-     * @param idProgetto L'ID del progetto di cui cercare i canali.
-     * @return Una lista di oggetti CanaleProgetto (potenzialmente vuota).
+     * @param idProgetto identificativo del progetto di cui ottenere i canali
+     * @return lista di {@link CanaleProgetto}; lista vuota se non ci sono canali o in caso di errore di connessione
+     * @see CostantiCanaleProgettoDAO#SELECT_CANALI_DI_PROGETTO
+     * @see DatabaseConnector#getConnection()
      */
     public List<CanaleProgetto> getCanaliPerProgetto(int idProgetto) {
         Connection conn = DatabaseConnector.getConnection();
@@ -76,11 +88,13 @@ public class CanaleProgettoDAO {
     }
 
     /**
-     * Recupera la lista di tutti i canali a cui un utente partecipa.
-     * Utilizza la Stored Procedure sp_UT6.
+     * Ottiene i canali di progetto a cui un utente partecipa.
+     * Utilizza la Stored Procedure {@code sp_UT6} per il recupero.
      *
-     * @param idUtente L'ID dell'utente.
-     * @return Una lista di oggetti CanaleProgetto.
+     * @param idUtente identificativo dell'utente
+     * @return lista di {@link CanaleProgetto}; lista vuota in caso di errore di connessione o SQL
+     * @see CostantiCanaleProgettoDAO#SP_GET_CANALI_PARTECIPATI
+     * @see DatabaseConnector#getConnection()
      */
     public List<CanaleProgetto> getCanaliPartecipatiDaUtente(int idUtente) {
         Connection conn = DatabaseConnector.getConnection();

@@ -7,16 +7,25 @@ import com.chatmulticanale.utils.PasswordUtils;
 import java.sql.SQLException;
 
 /**
- * Controller dedicato esclusivamente alla gestione del processo di registrazione (Sign Up).
+ * Controller dedicato al processo di registrazione degli utenti (Sign Up).
+ * Gestisce la creazione di un nuovo utente con ruolo di default 'Dipendente'.
  */
 public class SignUpController {
     private final UtenteDAO utenteDAO = new UtenteDAO();
 
     /**
-     * Orchestra il processo di registrazione per un nuovo utente pubblico.
-     * Il ruolo viene assegnato di default a 'Dipendente' per motivi di sicurezza.
+     * Registra un nuovo utente pubblico con credenziali e dati anagrafici.
+     * Esegue l'hash della password, crea l'oggetto Utente e lo salva nel database.
+     * Il ruolo assegnato di default è 'Dipendente' per motivi di sicurezza.
      *
-     * @return true se la registrazione ha successo, false altrimenti.
+     * @param username  nome utente scelto dall'utente (deve essere univoco)
+     * @param password  password in chiaro fornita dall'utente
+     * @param nome      nome proprio dell'utente
+     * @param cognome   cognome dell'utente
+     * @return {@code true} se la registrazione ha successo;
+     *         {@code false} in caso di errore (es. Username già esistente o altre violazioni di vincoli SQL)
+     * @see PasswordUtils#hashPassword(String)
+     * @see UtenteDAO#creaNuovoUtente(Utente)
      */
     public boolean registraNuovoUtente(String username, String password, String nome, String cognome) {
         // 1. Hash della password prima di salvarla
@@ -30,7 +39,7 @@ public class SignUpController {
         nuovoUtente.setPassword(passwordHash);
         nuovoUtente.setNome(nome);
         nuovoUtente.setCognome(cognome);
-        nuovoUtente.setRuolo(Ruolo.dipendente); // Ruolo fisso per la registrazione pubblica
+        nuovoUtente.setRuolo(Ruolo.dipendente); // Ruolo fisso per la registrazione
 
         // 3. Salvataggio nel database tramite il DAO
         try {

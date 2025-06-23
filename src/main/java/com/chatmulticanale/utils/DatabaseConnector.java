@@ -7,47 +7,58 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
-import java.util.logging.Logger; // <-- 1. IMPORTA IL LOGGER
+import java.util.logging.Logger;
 
 /**
- * Gestisce la connessione al database come un Singleton.
- * Carica le credenziali da un file.properties per evitare di scriverle nel codice.
+ * Gestisce la connessione al database utilizzando il pattern Singleton.
+ * <p>
+ * Carica le proprietà di connessione da un file {@code config.properties} presente nel classpath.
+ * Espone metodi statici per ottenere e chiudere la connessione condivisa.
  */
-public class DatabaseConnector {
+public final class DatabaseConnector {
 
-    private DatabaseConnector() {
-        // costruttore privato
-    }
-
+    // Logger per i messaggi di errore e informazione
     private static final Logger logger = Logger.getLogger(DatabaseConnector.class.getName());
 
+    // Connessione singleton condivisa
     private static Connection conn = null;
+
+    // Proprietà di configurazione (URL, utente, password)
     private static final Properties props = new Properties();
 
-    // Blocco di inizializzazione statico.
+    // Costruttore privato per evitare l'instanziazione
+    private DatabaseConnector() {
+    }
+
+    // Inizializzazione statica: carica il file di configurazione
     static {
-        try (InputStream input = DatabaseConnector.class.getClassLoader().getResourceAsStream("config.properties")) {
+        try (InputStream input = DatabaseConnector.class.getClassLoader()
+                .getResourceAsStream("config.properties")) {
             if (input == null) {
-                // Errore critico: l'app non può partire senza configurazione.
-                logger.log(Level.SEVERE, "ERRORE FATALE: Impossibile trovare il file config.properties nel classpath.");
+                logger.log(Level.SEVERE,
+                        "ERRORE FATALE: Impossibile trovare il file config.properties nel classpath.");
             } else {
                 props.load(input);
             }
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, "ERRORE FATALE: Impossibile leggere il file di configurazione.", ex);
+            logger.log(Level.SEVERE,
+                    "ERRORE FATALE: Impossibile leggere il file di configurazione.", ex);
         }
     }
 
     /**
-     * Restituisce un'istanza della connessione al database.
-     * Se la connessione non esiste o è chiusa, ne crea una nuova.
-     * @return L'oggetto Connection, o null se la connessione fallisce.
+     * Restituisce la connessione singleton al database.
+     * <p>
+     * Se la connessione non è ancora stata aperta o è chiusa, ne crea una nuova
+     * utilizzando le proprietà caricate dal file di configurazione.
+     *
+     * @return l'istanza di {@link Connection} se creata con successo, altrimenti {@code null}
      */
     public static Connection getConnection() {
         try {
             if (conn == null || conn.isClosed()) {
                 if (props.isEmpty()) {
-                    logger.severe("Le proprietà del database non sono state caricate, impossibile creare la connessione.");
+                    logger.severe("Proprietà del database non caricate. Impossibile creare la connessione.");
                     return null;
                 }
                 conn = DriverManager.getConnection(
@@ -57,7 +68,9 @@ public class DatabaseConnector {
                 );
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Errore durante la connessione al database. Controllare URL, utente e password nel file di configurazione.", e);
+            logger.log(Level.SEVERE,
+                    "Errore durante la connessione al database. Verificare URL, utente e password.",
+                    e);
             return null;
         }
         return conn;
@@ -65,7 +78,8 @@ public class DatabaseConnector {
 
     /**
      * Chiude la connessione al database se è aperta.
-     * Questo metodo dovrebbe essere chiamato alla chiusura dell'applicazione.
+     * <p>
+     * Dovrebbe essere chiamato alla terminazione dell'applicazione per rilasciare le risorse.
      */
     public static void closeConnection() {
         try {
@@ -74,7 +88,9 @@ public class DatabaseConnector {
                 logger.info("Connessione al database chiusa con successo.");
             }
         } catch (SQLException e) {
-            logger.log(Level.WARNING, "Errore durante la chiusura della connessione al database.", e);
+            logger.log(Level.WARNING,
+                    "Errore durante la chiusura della connessione al database.",
+                    e);
         }
     }
 }

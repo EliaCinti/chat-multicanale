@@ -12,17 +12,27 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * DAO per la gestione dei progetti nel database.
+ * Fornisce metodi per:
+ * <ul>
+ *   <li>Recuperare progetti con i loro responsabili (DTO)</li>
+ *   <li>Gestire operazioni CRUD sui progetti</li>
+ *   <li>Assegnare e riassegnare responsabilità</li>
+ * </ul>
+ * Utilizza costanti SQL definite in {@link CostantiProgettoDAO} e
+ * {@link CostantiUtenteDAO}, e connessioni tramite {@link DatabaseConnector}.
+ */
 public class ProgettoDAO {
     private static final Logger logger = Logger.getLogger(ProgettoDAO.class.getName());
 
     /**
-     * Recupera una lista di DTO contenenti i progetti assegnati e i dettagli dei loro responsabili,
-     * incluso l'ID del responsabile.
-     * <p>
-     * Esegue una sola query efficiente con un {@code JOIN} per ottenere tutti i dati necessari.
-     * In caso di errore, logga e restituisce una lista vuota.
+     * Restituisce i progetti con i relativi responsabili.
+     * Esegue un JOIN efficiente per aggregare i dati.
      *
-     * @return Una {@code List<ProgettoResponsabileDTO>} con i dati dei progetti e dei loro manager.
+     * @return lista di {@link ProgettoResponsabileDTO}; lista vuota in caso di errore
+     * @see CostantiProgettoDAO#SELECT_PROGETTI_E_RESPONSABILI_QUERY
+     * @see DatabaseConnector#getConnection()
      */
     public List<ProgettoResponsabileDTO> getProgettiConResponsabile() {
         Connection conn = DatabaseConnector.getConnection();
@@ -52,11 +62,11 @@ public class ProgettoDAO {
     }
 
     /**
-     * Trova tutti i progetti di cui un dato utente è responsabile.
+     * Recupera i progetti di cui un utente è responsabile.
      *
-     * @param idResponsabile L'ID dell'utente responsabile.
-     * @return Una {@code List<Progetto>} contenente i progetti gestiti dall'utente.
-     *         La lista sarà vuota se l'utente non gestisce progetti o in caso di errore.
+     * @param idResponsabile identificativo dell'utente responsabile
+     * @return lista di {@link Progetto}; lista vuota se nessun progetto o errore
+     * @see CostantiProgettoDAO#SELECT_PROGETTI_RESPONSABILE_QUERY
      */
     public List<Progetto> trovaProgettiPerResponsabile(int idResponsabile) {
         Connection conn = DatabaseConnector.getConnection();
@@ -84,13 +94,13 @@ public class ProgettoDAO {
     }
 
     /**
-     * Assegna per la prima volta un responsabile a un progetto.
-     * <p>
+     * Assegna la responsabilità di un progetto a un capo progetto.
      * Utilizza la Stored Procedure {@code sp_AM3_AssegnaResponsabilitaProgetto}.
      *
-     * @param idProgetto L'ID del progetto da assegnare.
-     * @param idCapoProgetto L'ID del Capo Progetto a cui assegnarlo.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idProgetto        identificativo del progetto
+     * @param idCapoProgetto    identificativo del capo progetto
+     * @throws SQLException in caso di connessione assente o errore SQL
+     * @see CostantiProgettoDAO#SP_ASSEGNA_RESPONSABILITA_PROGETTO
      */
     public void assegnaResponsabilitaProgetto(int idProgetto, int idCapoProgetto) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -107,13 +117,13 @@ public class ProgettoDAO {
     }
 
     /**
-     * Aggiorna il responsabile di un progetto esistente.
-     * <p>
+     * Riassegna un progetto a un nuovo responsabile.
      * Utilizza la Stored Procedure {@code sp_AM4_RiassegnaResponsabilitaProgetto}.
      *
-     * @param idProgetto L'ID del progetto da aggiornare.
-     * @param idNuovoResponsabile L'ID del nuovo utente responsabile.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idProgetto           identificativo del progetto
+     * @param idNuovoResponsabile  identificativo del nuovo responsabile
+     * @throws SQLException in caso di connessione assente o errore SQL
+     * @see CostantiProgettoDAO#SP_RIASSEGNA_RESPONSABILITA_PROGETTI
      */
     public void aggiornaResponsabileProgetto(int idProgetto, int idNuovoResponsabile) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -131,14 +141,11 @@ public class ProgettoDAO {
     }
 
     /**
-     * Inserisce un nuovo progetto nel database.
-     * <p>
-     * Il campo {@code Utente_Responsabile} viene lasciato a {@code NULL} di default e può
-     * essere assegnato in un secondo momento.
+     * Crea un nuovo progetto nel database con nome e descrizione.
      *
-     * @param nuovoProgetto Un oggetto {@link Progetto} contenente il nome e la descrizione.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore
-     *         (es. Nome progetto duplicato).
+     * @param nuovoProgetto oggetto {@link Progetto} con i dati del progetto
+     * @throws SQLException in caso di connessione assente o errore SQL (es. Duplicato)
+     * @see CostantiProgettoDAO#INSERT_PROGETTO_QUERY
      */
     public void creaNuovoProgetto(Progetto nuovoProgetto) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -155,12 +162,11 @@ public class ProgettoDAO {
     }
 
     /**
-     * Recupera una lista di tutti i progetti che non hanno un responsabile assegnato.
-     * <p>
-     * Questo metodo è fondamentale per l'operazione amministrativa di assegnazione (AM3).
-     * In caso di errore SQL o di connessione assente, logga l'errore e restituisce una lista vuota.
+     * Recupera tutti i progetti privi di responsabile.
+     * Utile per operazioni di assegnazione amministrativa.
      *
-     * @return Una {@code List<Progetto>} (potenzialmente vuota) di progetti non assegnati.
+     * @return lista di {@link Progetto}; lista vuota in caso di errore
+     * @see CostantiProgettoDAO#SELECT_PROGETTI_NON_ASSEGNATI_QUERY
      */
     public List<Progetto> getProgettiNonAssegnati() {
         Connection conn = DatabaseConnector.getConnection();

@@ -14,19 +14,27 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * DAO per la gestione delle chat private nel database.
+ * Offre metodi per supervisione delle chat di progetto, avvio di nuove chat private
+ * e recupero delle chat dell'utente.
+ * Utilizza Stored Procedures definite in {@link CostantiChatPrivataDAO}
+ * e gestisce la connessione tramite {@link DatabaseConnector}.
+ */
 public class ChatPrivataDAO {
 
     private static final Logger logger = Logger.getLogger(ChatPrivataDAO.class.getName());
 
     /**
-     * Recupera una lista di chat private originate da un progetto specifico,
-     * per la supervisione da parte del Capo Progetto.
-     * Utilizza la Stored Procedure sp_CP4.
+     * Recupera le chat private originate da un progetto, per supervisione da parte del capo progetto.
+     * Utilizza la Stored Procedure {@code sp_CP4}.
      *
-     * @param idProgetto L'ID del progetto da cui sono originate le chat.
-     * @param idCapoProgetto L'ID del capo progetto che richiede l'accesso (per validazione).
-     * @return Una lista di {@link ChatSupervisioneDTO}.
-     * @throws SQLException se l'utente non è autorizzato o per altri errori DB.
+     * @param idProgetto      identificativo del progetto di origine delle chat
+     * @param idCapoProgetto  identificativo del capo progetto richiedente (per autorizzazione)
+     * @return lista di {@link ChatSupervisioneDTO} con informazioni di anteprima delle chat
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL (es. Permessi negati)
+     * @see CostantiChatPrivataDAO#SP_GET_CHAT_DA_SUPERVISIONARE
+     * @see DatabaseConnector#getConnection()
      */
     public List<ChatSupervisioneDTO> getChatDaSupervisionare(int idProgetto, int idCapoProgetto) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -66,13 +74,13 @@ public class ChatPrivataDAO {
     }
 
     /**
-     * Avvia una nuova chat privata a partire da un messaggio esistente in un canale.
-     * Utilizza la Stored Procedure sp_UT3.
+     * Avvia una nuova chat privata a partire da un messaggio esistente.
+     * Utilizza la Stored Procedure {@code sp_UT3}.
      *
-     * @param idMessaggioOrigine L'ID del messaggio da cui si origina la chat.
-     * @param idUtenteIniziatore L'ID dell'utente che sta avviando la chat.
-     * @throws SQLException se si verifica un errore, ad esempio se il messaggio
-     *         non è valido o se si tenta di avviare una chat con se stessi.
+     * @param idMessaggioOrigine identificativo del messaggio di partenza
+     * @param idUtenteIniziatore identificativo dell'utente che avvia la chat
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL (es. Chat non valida)
+     * @see CostantiChatPrivataDAO#SP_AVVIA_CHAT_PRIVATA
      */
     public void avviaChatPrivata(int idMessaggioOrigine, int idUtenteIniziatore) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -92,11 +100,13 @@ public class ChatPrivataDAO {
     }
 
     /**
-     * Recupera la lista di tutte le chat private in cui un utente è coinvolto.
-     * Utilizza la Stored Procedure sp_UT7.
+     * Recupera tutte le chat private di cui un utente è partecipante.
+     * Utilizza la Stored Procedure {@code sp_UT7}.
      *
-     * @param idUtente L'ID dell'utente.
-     * @return Una lista di {@link ChatPrivataDTO}.
+     * @param idUtente identificativo dell'utente
+     * @return lista di {@link ChatPrivataDTO} con le chat dell'utente
+     *         (lista vuota in caso di errore di connessione o SQL)
+     * @see CostantiChatPrivataDAO#SP_GET_CHAT_UTENTE
      */
     public List<ChatPrivataDTO> getChatDiUtente(int idUtente) {
         Connection conn = DatabaseConnector.getConnection();
@@ -106,7 +116,6 @@ public class ChatPrivataDAO {
         }
 
         List<ChatPrivataDTO> chatList = new ArrayList<>();
-        // Usiamo la nuova SP
         try (CallableStatement stmt = conn.prepareCall(CostantiChatPrivataDAO.SP_GET_CHAT_UTENTE)) {
             stmt.setInt(1, idUtente);
 

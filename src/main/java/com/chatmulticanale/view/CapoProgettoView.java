@@ -14,18 +14,39 @@ import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 import java.util.List;
 
+/**
+ * Schermata principale riservata ai Capi Progetto.
+ * Offre un menu per gestire i propri progetti, canali, membri e supervisionare chat private.
+ * <p>
+ * Utilizza {@link GestioneProgettiController} per le operazioni sui progetti e canali
+ * e {@link InterazioneUtenteController} per le interazioni utente-chat.
+ */
 public class CapoProgettoView implements View {
 
     private final GestioneProgettiController gestioneController;
     private final InterazioneUtenteController interazioneController;
     private final ComunicazioneViewHelper comunicazioneHelper;
 
+    /**
+     * Costruisce la vista passando i controller necessari.
+     *
+     * @param gestioneController controller per gestione progetti e canali
+     * @param interazioneController controller per invio e ricezione messaggi
+     */
     public CapoProgettoView(GestioneProgettiController gestioneController, InterazioneUtenteController interazioneController) {
         this.gestioneController = gestioneController;
         this.interazioneController = interazioneController;
         this.comunicazioneHelper = new ComunicazioneViewHelper(interazioneController);
     }
 
+    /**
+     * Mostra il menu principale del Capo Progetto.
+     * <p>
+     * Gestisce le scelte dell'utente richiamando i metodi handler corrispondenti.
+     * Supporta comandi di navigazione tramite {@link CommandException}.
+     *
+     * @return oggetto {@link Navigazione} che indica l'azione successiva (logout/back)
+     */
     @Override
     public Navigazione show() {
         while (true) {
@@ -34,6 +55,7 @@ public class CapoProgettoView implements View {
             ViewUtils.println(CostantiView.WELCOME + SessionManager.getInstance().getUtenteLoggato().getUsername() + "!");
             ViewUtils.printSeparator();
 
+            // Menu gestione progetti
             ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_CAPO_PROGETTO_OPZIONI_GESTIONE_PROGETTI + ColorUtils.ANSI_RESET);
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_1);
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_2);
@@ -41,50 +63,42 @@ public class CapoProgettoView implements View {
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_4);
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_5);
             ViewUtils.printSeparator();
+
+            // Menu interazioni utente
             ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.HOME_CAPO_PROGETTO_OPZIONI_INTERAZIONE_UTENTE + ColorUtils.ANSI_RESET);
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_6);
             ViewUtils.printSeparator();
             ViewUtils.println(CostantiView.HOME_CAPO_PROGETTO_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta;
             try {
-                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
+                int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 6);
+                switch (scelta) {
+                    case 1 -> handleVisualizzaMieiProgetti();
+                    case 2 -> handleCreaCanale();
+                    case 3 -> handleAggiungiUtenteACanale();
+                    case 4 -> handleRimuoviUtenteDaCanale();
+                    case 5 -> handleSupervisionaChatPrivate();
+                    case 6 -> handleAccediACanaliEChat();
+                    case 0 -> {
+                        SessionManager.getInstance().logout();
+                        return Navigazione.logout();
+                    }
+                }
             } catch (CommandException e) {
                 if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
                     return e.getNavigazione();
                 }
-                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + "Scelta non valida." + ColorUtils.ANSI_RESET);
                 InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
-                continue;
-            }
-            switch (scelta) {
-                case 1:
-                    handleVisualizzaMieiProgetti();
-                    break;
-                case 2:
-                    handleCreaCanale();
-                    break;
-                case 3:
-                    handleAggiungiUtenteACanale();
-                    break;
-                case 4:
-                    handleRimuoviUtenteDaCanale();
-                    break;
-                case 5:
-                    handleSupervisionaChatPrivate();
-                    break;
-                case 6:
-                    handleAccediACanaliEChat();
-                    break;
-                case 0:
-                    SessionManager.getInstance().logout();
-                    return Navigazione.logout();
-                default:
             }
         }
     }
 
+    /**
+     * Mostra i progetti di cui l'utente è responsabile.
+     * Permette di visualizzare l'elenco o un messaggio se non ci sono progetti.
+     */
     private void handleVisualizzaMieiProgetti() {
         ViewUtils.clearScreen();
         ViewUtils.println(ColorUtils.ANSI_BOLD + CostantiView.I_MIEI_PROGETTI + ColorUtils.ANSI_RESET);
@@ -104,6 +118,11 @@ public class CapoProgettoView implements View {
         InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
+    /**
+     * Consente di creare un nuovo canale per uno dei propri progetti.
+     * Chiede selezione del progetto, nome e descrizione del canale.
+     * Gestisce comandi di annullamento e comunica l'esito.
+     */
     private void handleCreaCanale() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         try {
@@ -136,6 +155,10 @@ public class CapoProgettoView implements View {
         InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
+    /**
+     * Permette di aggiungere un dipendente a un canale esistente.
+     * Gestisce la selezione di progetto, canale e utente, con annullamento.
+     */
     private void handleAggiungiUtenteACanale() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         try {
@@ -189,6 +212,10 @@ public class CapoProgettoView implements View {
         InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
+    /**
+     * Permette di rimuovere un dipendente da un canale.
+     * Simile al flusso di aggiunta ma per rimozione.
+     */
     private void handleRimuoviUtenteDaCanale() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
         try {
@@ -243,8 +270,8 @@ public class CapoProgettoView implements View {
     }
 
     /**
-     * Gestisce il flusso per la supervisione (sola lettura) delle chat private
-     * originate da un progetto di cui l'utente è responsabile.
+     * Supervisiona le chat private originate da un progetto.
+     * Mostra l'elenco e apre la chat in sola lettura.
      */
     private void handleSupervisionaChatPrivate() {
         int idUtenteLoggato = SessionManager.getInstance().getUtenteLoggato().getIdUtente();
@@ -314,6 +341,10 @@ public class CapoProgettoView implements View {
         InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_HOME);
     }
 
+    /**
+     * Accede alle aree di comunicazione: canali e chat private.
+     * Utilizza {@link ComunicazioneViewHelper} per gestire il flusso.
+     */
     private void handleAccediACanaliEChat() {
         while (true) {
             ViewUtils.clearScreen();
@@ -342,6 +373,14 @@ public class CapoProgettoView implements View {
         }
     }
 
+    /**
+     * Mostra un prompt e lista di progetti, e restituisce l'ID selezionato.
+     *
+     * @param progetti lista di {@link Progetto}
+     * @param prompt messaggio da mostrare
+     * @return ID del progetto scelto
+     * @throws CommandException se si invia un comando di navigazione
+     */
     private int selezionaProgetto(List<Progetto> progetti, String prompt) throws CommandException {
         ViewUtils.println(prompt);
         progetti.forEach(p -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME, p.getIdProgetto(), p.getNomeProgetto())));
@@ -349,11 +388,18 @@ public class CapoProgettoView implements View {
         return InputHelper.chiediIdValido("ID Progetto: ", progetti);
     }
 
+    /**
+     * Mostra un prompt e lista di canali, e restituisce l'ID selezionato.
+     *
+     * @param canali lista di {@link CanaleProgetto}
+     * @param prompt messaggio da mostrare
+     * @return ID del canale scelto
+     * @throws CommandException se si invia un comando di navigazione
+     */
     private int selezionaCanale(List<CanaleProgetto> canali, String prompt) throws CommandException {
         ViewUtils.println("\n" + prompt);
         canali.forEach(c -> ViewUtils.println(String.format(CostantiView.FORMATO_ID_NOME, c.getIdCanale(), c.getNomeCanale())));
         ViewUtils.printSeparator();
         return InputHelper.chiediIdValido("ID Canale: ", canali);
     }
-
 }

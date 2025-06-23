@@ -2,40 +2,45 @@ package com.chatmulticanale.utils;
 
 import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.view.navigation.Navigazione;
-
 import java.util.Scanner;
 import java.util.function.Predicate;
 
 /**
- * Classe di utilità per gestire l'input dell'utente in modo centralizzato e robusto.
- * Utilizza una singola istanza di Scanner per evitare conflitti.
+ * Utility class per gestire l'input dell'utente in console in modo centralizzato e robusto.
+ * <p>
+ * Utilizza una singola istanza di {@link Scanner} per l'intera applicazione.
+ * Gestisce comandi di navigazione (es. "/b", "/q") lanciando {@link CommandException}
+ * e fornisce metodi per la validazione e la lettura di stringhe e numeri interi.
  */
-public class InputUtils {
+public final class InputUtils {
 
-    private InputUtils() {
-        // costruttore vuoto
-    }
-
-    // Un'unica istanza di Scanner per tutta l'applicazione.
+    // Singola istanza di Scanner per evitare conflitti di input
     private static final Scanner scanner = new Scanner(System.in);
 
+    // Costruttore privato per evitare istanziazione
+    private InputUtils() {
+    }
+
     /**
-     * Metodo principale e definitivo per chiedere un input all'utente.
-     * Legge una riga e PRIMA controlla se è un comando. Se lo è, lancia una CommandException.
-     * Se non è un comando, lo valida come dato.
+     * Chiede una stringa all'utente con validazione personalizzata.
+     * <p>
+     * Verifica prima se l'input corrisponde a un comando di navigazione ("/b" o "/q").
+     * In caso affermativo, lancia {@link CommandException} con la navigazione corrispondente.
+     * Altrimenti, valida il dato con il {@code validator} e, in caso di fallimento,
+     * mostra {@code errorMessage} e ripete la richiesta.
      *
-     * @param prompt Il messaggio da mostrare.
-     * @param validator La regola di validazione per i dati.
-     * @param errorMessage Il messaggio di errore per la validazione.
-     * @return La stringa validata.
-     * @throws CommandException se l'utente inserisce un comando come "/b" o "/q".
+     * @param prompt       il messaggio da mostrare all'utente
+     * @param validator    predicato per validare l'input utente
+     * @param errorMessage messaggio di errore da mostrare in caso di validazione fallita
+     * @return la stringa validata dall'utente
+     * @throws CommandException se viene inserito un comando di navigazione ("/b", "/q")
      */
     public static String askForInput(String prompt, Predicate<String> validator, String errorMessage) throws CommandException {
         while (true) {
             ViewUtils.print(prompt);
             String input = scanner.nextLine();
 
-            // 1. CONTROLLO COMANDI: Questo scatta prima di qualsiasi altra cosa.
+            // Controllo comandi di navigazione
             if (input.equalsIgnoreCase("/b") || input.equalsIgnoreCase("/back")) {
                 throw new CommandException(Navigazione.indietro());
             }
@@ -43,83 +48,88 @@ public class InputUtils {
                 throw new CommandException(Navigazione.logout());
             }
 
-            // 2. VALIDAZIONE DATI: Eseguita solo se l'input non era un comando.
+            // Validazione dei dati
             if (validator.test(input)) {
-                return input; // Dato valido
+                return input;
             } else {
                 ViewUtils.println(ColorUtils.ANSI_RED + errorMessage + ColorUtils.ANSI_RESET);
             }
         }
     }
 
-    // Un overload per quando basta che l'input non sia vuoto
+    /**
+     * Overload di {@link #askForInput(String, Predicate, String)} che richiede solo che
+     * la stringa non sia vuota.
+     *
+     * @param prompt il messaggio da mostrare all'utente
+     * @return la stringa non vuota inserita dall'utente
+     * @throws CommandException se viene inserito un comando di navigazione
+     */
     public static String askForInput(String prompt) throws CommandException {
         return askForInput(prompt, s -> !s.trim().isEmpty(), "Errore: Il campo non può essere vuoto.");
     }
 
     /**
-     * Metodo robusto per leggere un numero intero dall'utente.
-     * Gestisce input non numerici e i comandi di navigazione.
+     * Legge e restituisce un intero dall'utente.
+     * <p>
+     * Usa {@link #askForInput(String)} per gestire comandi di navigazione
+     * e poi converte la stringa in intero, ritentando in caso di formato errato.
      *
-     * @param prompt Il messaggio da mostrare.
-     * @return L'intero inserito dall'utente.
-     * @throws CommandException se l'utente inserisce un comando.
+     * @param prompt il messaggio da mostrare all'utente
+     * @return l'intero inserito dall'utente
+     * @throws CommandException se viene inserito un comando di navigazione
      */
     public static int readInt(String prompt) throws CommandException {
         while (true) {
-            // Usiamo il nostro metodo base per leggere l'input.
-            // La validazione qui è semplice perché la vera validazione è la conversione a intero.
-            String input = askForInput(prompt, s -> true, ""); // Accetta qualsiasi stringa (che non sia un comando)
-
+            String input = askForInput(prompt);
             try {
-                // Tenta di convertire la stringa in un numero.
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                // Se la conversione fallisce, mostra un errore e il loop ricomincia.
                 ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
             }
         }
     }
 
     /**
-     * Mostra un messaggio e attende semplicemente che l'utente prema il tasto Invio.
-     * Questo metodo è utile per "mettere in pausa" l'applicazione, non per raccogliere dati,
-     * e quindi NON esegue alcuna validazione sull'input.
+     * Legge e restituisce un intero all'interno di un range inclusivo.
+     * <p>
+     * Richiama {@link #readInt(String)} e verifica che il valore sia tra {@code min} e {@code max}.
+     * In caso contrario, mostra messaggio di errore e ripete.
      *
-     * @param prompt Il messaggio da mostrare all'utente (es. "Premi Invio per continuare...").
-     */
-    public static void pressEnterToContinue(String prompt) {
-        ViewUtils.print(prompt); // Usiamo ViewUtils per coerenza
-        scanner.nextLine();      // Legge semplicemente la riga, qualsiasi essa sia, e la ignora.
-    }
-
-    /**
-     * Legge un numero intero dall'utente, assicurandosi che sia all'interno
-     * di un range specifico (inclusi gli estremi).
-     * Gestisce input non numerici e comandi di navigazione.
-     *
-     * @param prompt Il messaggio da mostrare.
-     * @param min Il valore minimo accettabile.
-     * @param max Il valore massimo accettabile.
-     * @return L'intero valido inserito dall'utente.
-     * @throws CommandException se l'utente inserisce un comando.
+     * @param prompt il messaggio da mostrare all'utente
+     * @param min    valore minimo accettabile
+     * @param max    valore massimo accettabile
+     * @return l'intero valido inserito dall'utente
+     * @throws CommandException se viene inserito un comando di navigazione
      */
     public static int readIntInRange(String prompt, int min, int max) throws CommandException {
         while (true) {
-            // Chiamiamo il nostro readInt() base per ottenere un numero
             int numero = readInt(prompt);
-
-            // Aggiungiamo il controllo sul range
             if (numero >= min && numero <= max) {
-                return numero; // Il numero è valido, lo restituiamo
+                return numero;
             } else {
-                // Se il numero è fuori range, mostriamo un errore e il loop continua
-                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: La scelta deve essere compresa tra " + min + " e " + max + "." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED +
+                        "Errore: La scelta deve essere compresa tra " + min + " e " + max + "." +
+                        ColorUtils.ANSI_RESET);
             }
         }
     }
 
-    // Metodo per chiudere lo scanner quando l'applicazione termina.
+    /**
+     * Mostra un prompt e attende che l'utente prema Invio per continuare.
+     * Utile per mettere in pausa l'applicazione tra schermate.
+     *
+     * @param prompt il messaggio di pausa (es. "Premi Invio per continuare...")
+     */
+    public static void pressEnterToContinue(String prompt) {
+        ViewUtils.print(prompt);
+        scanner.nextLine();
+    }
+
+    /**
+     * Chiude lo scanner condiviso. Deve essere chiamato alla fine dell'applicazione
+     * per rilasciare le risorse di input.
+     */
     public static void closeScanner() {
         scanner.close();
     }

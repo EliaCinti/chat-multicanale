@@ -6,16 +6,21 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * DAO responsabile della gestione delle partecipazioni degli utenti nei canali di progetto.
+ * Offre metodi per aggiungere e rimuovere utenti da un canale, utilizzando le Stored Procedures
+ * definite in {@link CostantiPartecipaCanaleDAO} e connessioni fornite da {@link DatabaseConnector}.
+ */
 public class PartecipaCanaleDAO {
 
     /**
      * Aggiunge un utente a un canale specifico.
-     * <p>
-     * Utilizza la Stored Procedure {@code sp_CP2_AggiungiUtenteACanale}.
      *
-     * @param idCanale L'ID del canale.
-     * @param idUtente L'ID dell'utente da aggiungere.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idCanale identificativo del canale di progetto
+     * @param idUtente identificativo dell'utente da aggiungere
+     * @throws SQLException se la connessione al database non è disponibile o se si verifica un errore SQL
+     * @see CostantiPartecipaCanaleDAO#SP_AGGIUNGI_UTENTE_A_CANALE
+     * @see DatabaseConnector#getConnection()
      */
     public void aggiungiUtenteACanale(int idCanale, int idUtente) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -33,12 +38,12 @@ public class PartecipaCanaleDAO {
 
     /**
      * Rimuove un utente da un canale specifico.
-     * <p>
-     * Utilizza la Stored Procedure {@code sp_CP3_RimuoviUtenteDaCanale}.
      *
-     * @param idCanale L'ID del canale.
-     * @param idUtente L'ID dell'utente da rimuovere.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idCanale identificativo del canale di progetto
+     * @param idUtente identificativo dell'utente da rimuovere
+     * @throws SQLException se la connessione al database non è disponibile o se si verifica un errore SQL
+     * @see CostantiPartecipaCanaleDAO#SP_RIMUOVI_UTENTE_DA_CANALE
+     * @see DatabaseConnector#getConnection()
      */
     public void rimuoviUtenteDaCanale(int idCanale, int idUtente) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();

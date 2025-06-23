@@ -17,7 +17,6 @@ public class AmministrazioneController {
     private final UtenteDAO utenteDAO = new UtenteDAO();
     private final ProgettoDAO progettoDAO = new ProgettoDAO();
 
-    // --- METODI PER AM1 (PROMUOVI UTENTE) ---
     /**
      * Recupera la lista di tutti gli utenti che possono essere promossi (i Dipendenti).
      * @return Una lista di oggetti Utente.
@@ -27,9 +26,10 @@ public class AmministrazioneController {
     }
 
     /**
-     * Gestisce la logica di business per promuovere un utente.
-     * @param idUtente L'ID dell'utente da promuovere.
-     * @return true se l'operazione ha successo, false altrimenti.
+     * Promuove un utente al ruolo di capo progetto.
+     *
+     * @param idUtente identificativo dell'utente da promuovere
+     * @return {@code true} se l'operazione va a buon fine, {@code false} in caso di errore
      */
     public boolean promuoviUtenteACapoProgetto(int idUtente) {
         try {
@@ -40,33 +40,32 @@ public class AmministrazioneController {
         }
     }
 
-    // --- METODI PER AM2 (DEGRADA UTENTE) ---
     /**
-     * Recupera la lista di tutti gli utenti che sono attualmente Capi Progetto,
-     * per mostrarla all'amministratore.
-     * @return Una lista di Utente.
+     * Restituisce tutti gli utenti attualmente con il ruolo di capo progetto.
+     *
+     * @return lista di {@link Utente} che ricoprono il ruolo di capo progetto
+     * @see UtenteDAO#getTuttiCapiProgetto()
      */
     public List<Utente> getListaCapiProgetto() {
         return utenteDAO.getTuttiCapiProgetto();
     }
 
     /**
-     * Recupera la lista dei progetti gestiti da un utente specifico.
-     * @param idResponsabile L'ID del capo progetto.
-     * @return La lista dei suoi progetti.
+     * Recupera i progetti assegnati a un determinato responsabile.
+     *
+     * @param idResponsabile identificativo del capo progetto
+     * @return lista di {@link Progetto} di cui l'utente è responsabile
+     * @see ProgettoDAO#trovaProgettiPerResponsabile(int)
      */
     public List<Progetto> getProgettiDiUnResponsabile(int idResponsabile) {
         return progettoDAO.trovaProgettiPerResponsabile(idResponsabile);
     }
 
     /**
-     * Esegue la logica completa per degradare un Capo Progetto.
-     * ATTENZIONE: Questo metodo ora dipende dal flusso interattivo nella VISTA.
-     * Il controller fornisce solo i pezzi. La VISTA dovrà orchestrare la logica che hai descritto.
-     * Questo metodo esegue solo l'ultimo passo.
+     * Finalizza il processo di degradazione di un capo progetto, rimuovendo il ruolo corrispondente.
      *
-     * @param idUtente L'ID dell'utente da degradare.
-     * @return true se il degrado ha successo, false altrimenti.
+     * @param idUtente identificativo dell'utente da degradare
+     * @return {@code true} se il degrado viene completato con successo, {@code false} in caso di errore SQL
      */
     public boolean finalizzaDegradoCapoProgetto(int idUtente) {
         try {
@@ -77,22 +76,23 @@ public class AmministrazioneController {
         }
     }
 
-    // --- METODI PER AM3 (ASSEGNA RESPONSABILITA PROGETTO) ---
     /**
-     * Recupera la lista dei progetti che non hanno ancora un responsabile.
-     * @return Una lista di Progetto.
+     * Recupera i progetti che non hanno ancora un responsabile assegnato.
+     *
+     * @return lista di {@link Progetto} non assegnati
+     * @see ProgettoDAO#getProgettiNonAssegnati()
      */
     public List<Progetto> getListaProgettiNonAssegnati() {
         return progettoDAO.getProgettiNonAssegnati();
     }
 
     /**
-     * Esegue la logica di business per assegnare un progetto a un Capo Progetto per la prima volta.
-     * Chiama il metodo DAO che invoca la Stored Procedure sp_AM3.
+     * Assegna un progetto a un capo progetto per la prima volta.
+     * Utilizza la stored procedure {@code sp_AM3} lato database.
      *
-     * @param idProgetto L'ID del progetto da assegnare.
-     * @param idCapoProgetto L'ID del Capo Progetto a cui assegnarlo.
-     * @return true se l'operazione ha successo, false altrimenti.
+     * @param idProgetto       identificativo del progetto da assegnare
+     * @param idCapoProgetto   identificativo dell'utente designato come responsabile
+     * @return {@code true} se l'assegnazione ha successo, {@code false} in caso di errore SQL
      */
     public boolean assegnaProgetto(int idProgetto, int idCapoProgetto) {
         try {
@@ -103,21 +103,22 @@ public class AmministrazioneController {
         }
     }
 
-    // --- METODI PER AM4 (RIASSEGNA RESPONSABILITA PROGETTO)---
     /**
-     * Recupera la lista di progetti assegnati come DTO per la visualizzazione.
-     * Ogni DTO contiene i dati aggregati del progetto e del suo responsabile.
-     * @return Una lista di {@link ProgettoResponsabileDTO}.
+     * Restituisce una lista di progetti con i relativi responsabili, strutturata in DTO per la visualizzazione.
+     *
+     * @return lista di {@link ProgettoResponsabileDTO} che aggregano i dati del progetto e del responsabile
+     * @see ProgettoDAO#getProgettiConResponsabile()
      */
     public List<ProgettoResponsabileDTO> getListaProgettiConResponsabile() {
         return progettoDAO.getProgettiConResponsabile();
     }
 
     /**
-     * Tenta di riassegnare un progetto a un nuovo responsabile.
-     * @param idProgetto L'ID del progetto.
-     * @param idNuovoResponsabile L'ID del nuovo capo.
-     * @return true se ha successo, false altrimenti.
+     * Riassegna un progetto a un nuovo responsabile.
+     *
+     * @param idProgetto             identificativo del progetto da riassegnare
+     * @param idNuovoResponsabile    identificativo del nuovo capo progetto
+     * @return {@code true} se l'aggiornamento viene eseguito con successo, {@code false} in caso di errore SQL
      */
     public boolean riassegnaProgetto(int idProgetto, int idNuovoResponsabile) {
         try {
@@ -128,12 +129,12 @@ public class AmministrazioneController {
         }
     }
 
-    // --- METODI PER AGGIUNGERE UN PROGETTO ---
     /**
-     * Gestisce la logica per la creazione di un nuovo progetto.
-     * @param nome Il nome del nuovo progetto.
-     * @param descrizione La descrizione del nuovo progetto.
-     * @return true se la creazione ha successo, false altrimenti.
+     * Crea un nuovo progetto con nome e descrizione specificati.
+     *
+     * @param nome         nome del progetto da creare
+     * @param descrizione  descrizione del progetto da creare
+     * @return {@code true} se la creazione va a buon fine, {@code false} in caso di errore SQL
      */
     public boolean creaNuovoProgetto(String nome, String descrizione) {
         Progetto nuovoProgetto = new Progetto();

@@ -3,21 +3,30 @@ package com.chatmulticanale.utils;
 import com.chatmulticanale.model.Utente;
 
 /**
- * Singleton per gestire la sessione dell'utente.
- * Mantiene in memoria l'utente che ha effettuato il login.
+ * Singleton per gestire lo stato della sessione utente nell'applicazione.
+ * Mantiene in memoria le informazioni sull'utente che ha effettuato il login.
+ * Utilizza l'inizializzazione "lazy" per creare l'istanza solo quando necessaria.
  */
 public final class SessionManager {
-    private static SessionManager instance; // L'unica istanza della classe
 
-    private Utente utenteLoggato; // L'utente attualmente loggato
+    /**
+     * Unica istanza di SessionManager.
+     */
+    private static SessionManager instance;
 
-    // Il costruttore privato impedisce di creare istanze dall'esterno
+    /**
+     * Utente attualmente autenticato nella sessione.
+     */
+    private Utente utenteLoggato;
+
+    // Costruttore privato per evitare istanziazione esterna
     private SessionManager() {}
 
     /**
-     * Restituisce l'unica istanza della classe.
-     * Se non esiste, la crea. (Lazy initialization)
-     * @return L'istanza di SessionManager.
+     * Restituisce l'istanza singleton di SessionManager.
+     * Se non esiste ancora, ne crea una nuova.
+     *
+     * @return istanza di {@link SessionManager}
      */
     public static SessionManager getInstance() {
         if (instance == null) {
@@ -27,15 +36,17 @@ public final class SessionManager {
     }
 
     /**
-     * Registra l'utente che ha effettuato il login.
-     * @param utente L'oggetto Utente restituito dal DAO dopo un login corretto.
+     * Registra l'utente che ha effettuato il login nella sessione corrente.
+     *
+     * @param utente oggetto {@link Utente} autenticato
      */
     public void login(Utente utente) {
         this.utenteLoggato = utente;
     }
 
     /**
-     * Effettua il logout, rimuovendo l'utente dalla sessione.
+     * Effettua il logout rimuovendo l'utente dalla sessione.
+     * Dopo la chiamata, non c'è alcun utente autenticato.
      */
     public void logout() {
         this.utenteLoggato = null;
@@ -43,7 +54,8 @@ public final class SessionManager {
 
     /**
      * Restituisce l'utente attualmente loggato.
-     * @return L'oggetto Utente loggato, o null se nessuno è loggato.
+     *
+     * @return oggetto {@link Utente} autenticato o {@code null} se nessuno è loggato
      */
     public Utente getUtenteLoggato() {
         return utenteLoggato;

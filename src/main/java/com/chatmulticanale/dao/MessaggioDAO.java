@@ -13,21 +13,29 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * DAO per la gestione dei messaggi in canali di progetto e chat private.
+ * Utilizza Stored Procedures definite in {@link CostantiMessaggioDAO}
+ * e connessioni fornite da {@link DatabaseConnector}.
+ * Fornisce metodi per recuperare messaggi con paginazione e inviare messaggi,
+ * sia semplici che con citazione, in canali e chat.
+ */
 public class MessaggioDAO {
 
     private static final Logger logger = Logger.getLogger(MessaggioDAO.class.getName());
 
     /**
      * Recupera una pagina di messaggi da un canale di progetto.
-     * <p>
-     * I messaggi vengono arricchiti con le informazioni del mittente tramite la Stored
-     * Procedure {@code sp_UT2_VisualizzaMessaggiCanale}. In caso di errore,
-     * logga e restituisce una lista vuota.
+     * Utilizza la Stored Procedure {@code sp_UT2_VisualizzaMessaggiCanale}.
+     * In caso di errore, logga e restituisce lista vuota.
      *
-     * @param idCanale L'ID del canale.
-     * @param dimensionePagina Il numero di messaggi per pagina.
-     * @param numeroPagina Il numero della pagina (partendo da 1).
-     * @return Una {@code List<MessaggioDTO>} contenente i messaggi della pagina richiesta.
+     * @param idCanale       identificativo del canale di progetto
+     * @param idVisualizzatore identificativo dell'utente richiedente (per permessi)
+     * @param dimensionePagina numero di messaggi per pagina
+     * @param numeroPagina    numero della pagina (1-based)
+     * @return lista di {@link MessaggioDTO} con i messaggi richiesti; lista vuota in caso di errore
+     * @see CostantiMessaggioDAO#SP_GET_MESSAGGI_CANALE
+     * @see DatabaseConnector#getConnection()
      */
     public List<MessaggioDTO> getMessaggiCanalePaginati(int idCanale, int idVisualizzatore, int dimensionePagina, int numeroPagina) {
         Connection conn = DatabaseConnector.getConnection();
@@ -39,7 +47,6 @@ public class MessaggioDAO {
         List<MessaggioDTO> messaggi = new ArrayList<>();
 
         try (CallableStatement stmt = conn.prepareCall(CostantiMessaggioDAO.SP_GET_MESSAGGI_CANALE)) {
-            // Impostiamo i parametri nell'ordine corretto
             stmt.setInt(1, idCanale);
             stmt.setInt(2, idVisualizzatore);
             stmt.setInt(3, numeroPagina);
@@ -68,15 +75,16 @@ public class MessaggioDAO {
 
     /**
      * Recupera una pagina di messaggi da una chat privata.
-     * <p>
-     * I messaggi vengono arricchiti con le informazioni del mittente tramite la Stored
-     * Procedure {@code sp_UT5_VisualizzaMessaggiChatPrivata}. In caso di errore,
-     * logga e restituisce una lista vuota.
+     * Utilizza la Stored Procedure {@code sp_UT5_VisualizzaMessaggiChatPrivata}.
+     * In caso di errore, logga e restituisce lista vuota.
      *
-     * @param idChat L'ID della chat privata.
-     * @param dimensionePagina Il numero di messaggi per pagina.
-     * @param numeroPagina Il numero della pagina (partendo da 1).
-     * @return Una {@code List<MessaggioDTO>} contenente i messaggi della pagina richiesta.
+     * @param idChat           identificativo della chat privata
+     * @param idVisualizzatore identificativo dell'utente richiedente (per permessi)
+     * @param dimensionePagina numero di messaggi per pagina
+     * @param numeroPagina     numero della pagina (1-based)
+     * @return lista di {@link MessaggioDTO} con i messaggi richiesti; lista vuota in caso di errore
+     * @see CostantiMessaggioDAO#SP_GET_MESSAGGI_CHAT
+     * @see DatabaseConnector#getConnection()
      */
     public List<MessaggioDTO> getMessaggiChatPrivataPaginati(int idChat, int idVisualizzatore, int dimensionePagina, int numeroPagina) {
         Connection conn = DatabaseConnector.getConnection();
@@ -88,7 +96,6 @@ public class MessaggioDAO {
         List<MessaggioDTO> messaggi = new ArrayList<>();
 
         try (CallableStatement stmt = conn.prepareCall(CostantiMessaggioDAO.SP_GET_MESSAGGI_CHAT)) {
-            // Impostiamo i parametri nell'ordine corretto
             stmt.setInt(1, idChat);
             stmt.setInt(2, idVisualizzatore);
             stmt.setInt(3, numeroPagina);
@@ -116,14 +123,15 @@ public class MessaggioDAO {
     }
 
     /**
-     * Inserisce un nuovo messaggio semplice (senza citazione) in un canale di progetto.
-     * <p>
+     * Invia un nuovo messaggio semplice (senza citazione) in un canale di progetto.
      * Utilizza la Stored Procedure {@code sp_UT1a_InviaMessaggioCanaleSemplice}.
      *
-     * @param idCanale L'ID del canale in cui inviare il messaggio.
-     * @param idMittente L'ID dell'utente che invia il messaggio.
-     * @param contenuto Il testo del messaggio.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idCanale identificativo del canale
+     * @param idMittente identificativo dell'utente che invia il messaggio
+     * @param contenuto testo del messaggio
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL
+     * @see CostantiMessaggioDAO#SP_INVIA_MESSAGGIO_CANALE
+     * @see DatabaseConnector#getConnection()
      */
     public void inviaMessaggioInCanale(int idCanale, int idMittente, String contenuto) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -143,15 +151,16 @@ public class MessaggioDAO {
     }
 
     /**
-     * Inserisce un nuovo messaggio con citazione in un canale di progetto.
-     * <p>
+     * Invia un nuovo messaggio con citazione in un canale di progetto.
      * Utilizza la Stored Procedure {@code sp_UT1b_InviaMessaggioCanaleConCitazione}.
      *
-     * @param idCanale L'ID del canale.
-     * @param idMittente L'ID dell'utente che invia il messaggio.
-     * @param contenuto Il testo del messaggio.
-     * @param idMessaggioCitato L'ID del messaggio a cui si sta rispondendo.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idCanale           identificativo del canale
+     * @param idMittente         identificativo dell'utente che invia il messaggio
+     * @param contenuto          testo del messaggio
+     * @param idMessaggioCitato  identificativo del messaggio citato
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL
+     * @see CostantiMessaggioDAO#SP_INVIA_MESSAGGIO_CANALE_CITAZIONE
+     * @see DatabaseConnector#getConnection()
      */
     public void inviaMessaggioConCitazioneInCanale(int idCanale, int idMittente, String contenuto, int idMessaggioCitato) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -172,14 +181,15 @@ public class MessaggioDAO {
     }
 
     /**
-     * Inserisce un nuovo messaggio semplice in una chat privata.
-     * <p>
+     * Invia un nuovo messaggio semplice in una chat privata.
      * Utilizza la Stored Procedure {@code sp_UT4a_InviaMessaggioChatPrivataSemplice}.
      *
-     * @param idChat L'ID della chat privata.
-     * @param idMittente L'ID dell'utente che invia il messaggio.
-     * @param contenuto Il testo del messaggio.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idChat      identificativo della chat privata
+     * @param idMittente  identificativo dell'utente che invia il messaggio
+     * @param contenuto   testo del messaggio
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL
+     * @see CostantiMessaggioDAO#SP_INVIA_MESSAGGIO_CHAT
+     * @see DatabaseConnector#getConnection()
      */
     public void inviaMessaggioInChat(int idChat, int idMittente, String contenuto) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();
@@ -199,15 +209,16 @@ public class MessaggioDAO {
     }
 
     /**
-     * Inserisce un nuovo messaggio con citazione in una chat privata.
-     * <p>
+     * Invia un nuovo messaggio con citazione in una chat privata.
      * Utilizza la Stored Procedure {@code sp_UT4b_InviaMessaggioChatPrivataConCitazione}.
      *
-     * @param idChat L'ID della chat privata.
-     * @param idMittente L'ID dell'utente che invia il messaggio.
-     * @param contenuto Il testo del messaggio.
-     * @param idMessaggioCitato L'ID del messaggio da citare.
-     * @throws SQLException se la connessione non è disponibile o se si verifica un errore del database.
+     * @param idChat             identificativo della chat privata
+     * @param idMittente         identificativo dell'utente che invia il messaggio
+     * @param contenuto          testo del messaggio
+     * @param idMessaggioCitato  identificativo del messaggio citato
+     * @throws SQLException se la connessione è assente o si verifica un errore SQL
+     * @see CostantiMessaggioDAO#SP_INVIA_MESSAGGIO_CHAT_CITAZIONE
+     * @see DatabaseConnector#getConnection()
      */
     public void inviaMessaggioConCitazioneInChat(int idChat, int idMittente, String contenuto, int idMessaggioCitato) throws SQLException {
         Connection conn = DatabaseConnector.getConnection();

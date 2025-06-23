@@ -1,7 +1,7 @@
 package com.chatmulticanale.view;
 
 import com.chatmulticanale.controller.SignUpController;
-import com.chatmulticanale.exception.CommandException; // <-- NUOVO IMPORT
+import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.utils.ColorUtils;
 import com.chatmulticanale.utils.InputUtils;
 import com.chatmulticanale.utils.ViewUtils;
@@ -10,16 +10,48 @@ import com.chatmulticanale.view.navigation.Navigazione;
 import com.chatmulticanale.view.navigation.View;
 
 /**
- * Vista per la registrazione di un nuovo utente.
- * Ora gestisce i comandi di navigazione tramite CommandException.
+ * Vista dedicata al processo di registrazione di un nuovo utente.
+ * <p>
+ * Gestisce l'interfaccia per raccogliere username, password, nome e cognome,
+ * valida ogni campo tramite {@link InputUtils}, invoca il
+ * {@link SignUpController} per creare l'utente, e restituisce
+ * la navigazione successiva in base al risultato o ai comandi di navigazione.
  */
 public class SignUpView implements View {
+
+    /**
+     * Controller responsabile della logica di registrazione.
+     */
     private final SignUpController signUpController;
 
+    /**
+     * Costruisce la vista di registrazione con il controller specificato.
+     *
+     * @param controller istanza di {@link SignUpController} per gestire la creazione dell'utente
+     */
     public SignUpView(SignUpController controller) {
         this.signUpController = controller;
     }
 
+    /**
+     * Mostra il form di registrazione e gestisce il flusso di raccolta dati.
+     * <p>
+     * Richiede username, password, nome e cognome, con validazione:
+     * <ul>
+     *   <li>Username: nessuno spazio e non inizia con '/'</li>
+     *   <li>Password: almeno 8 caratteri</li>
+     *   <li>Nome e cognome: non vuoti</li>
+     * </ul>
+     * Dopo la raccolta, invoca {@link SignUpController#registraNuovoUtente}.
+     * <p>
+     * Gestisce i comandi di navigazione (/b, /q) tramite
+     * {@link CommandException}, restituendo l'azione corrispondente.
+     *
+     * @return navigazione successiva:
+     *         <ul>
+     *           <li>{@link Navigazione#indietro()} per tornare indietro in caso di successo o comando</li>
+     *         </ul>
+     */
     @Override
     public Navigazione show() {
         ViewUtils.clearScreen();
@@ -43,7 +75,6 @@ public class SignUpView implements View {
             String nome = InputUtils.askForInput("Il tuo nome: ");
             String cognome = InputUtils.askForInput("Il tuo cognome: ");
 
-            // Se siamo arrivati qui, tutti i dati sono stati raccolti con successo.
             boolean registrazioneRiuscita = signUpController.registraNuovoUtente(username, password, nome, cognome);
             if (registrazioneRiuscita) {
                 ViewUtils.println(ColorUtils.ANSI_GREEN + "\nRegistrazione completata con successo!" + ColorUtils.ANSI_RESET);
@@ -54,8 +85,7 @@ public class SignUpView implements View {
             return Navigazione.indietro();
 
         } catch (CommandException e) {
-            // L'utente ha inserito un comando. Interrompiamo tutto e restituiamo
-            // l'istruzione di navigazione contenuta nell'eccezione.
+            // Comando di navigazione ricevuto: torniamo indietro o logout
             return e.getNavigazione();
         }
     }
