@@ -33,7 +33,16 @@ public class DipendenteView implements View {
             ViewUtils.println(CostantiView.HOME_DIPENDENTE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 1);
+            int scelta;
+            try {
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 1);
+            } catch (CommandException e) {
+                if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
+                    return e.getNavigazione();
+                }
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                continue;
+            }
 
             switch (scelta) {
                 case 1:

@@ -37,7 +37,16 @@ public class AmministrazioneView implements View {
             ViewUtils.println(CostantiView.HOME_AMMINISTRATORE_OPZIONE_0);
             ViewUtils.printSeparator();
 
-            int scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
+            int scelta;
+            try {
+                scelta = InputUtils.readIntInRange(CostantiView.SELEZIONA_OPZIONE, 0, 5);
+            } catch (CommandException e) {
+                if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
+                    return e.getNavigazione();
+                }
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                continue;
+            }
             switch (scelta) {
                 case 1:
                     handlePromuoviUtente();

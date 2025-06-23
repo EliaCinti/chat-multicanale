@@ -2,6 +2,7 @@ package com.chatmulticanale.view;
 
 import com.chatmulticanale.controller.LoginController;
 import com.chatmulticanale.controller.SignUpController; // <-- NUOVO IMPORT
+import com.chatmulticanale.exception.CommandException;
 import com.chatmulticanale.utils.ColorUtils;
 import com.chatmulticanale.utils.InputUtils;
 import com.chatmulticanale.utils.ViewUtils;
@@ -36,7 +37,17 @@ public class WelcomeView implements View {
             ViewUtils.println("1. Login");
             ViewUtils.println("2. Registrati (come Dipendente)");
             ViewUtils.println("0. Esci dall'applicazione");
-            int scelta = InputUtils.readIntInRange("Scelta: ", 0, 2);
+
+            int scelta;
+            try {
+                scelta = InputUtils.readIntInRange("Scelta: ", 0, 2);
+            } catch (CommandException e) {
+                if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
+                    return e.getNavigazione();
+                }
+                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                continue;
+            }
 
             switch (scelta) {
                 case 1:

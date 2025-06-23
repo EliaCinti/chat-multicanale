@@ -612,8 +612,8 @@ BEGIN
         Nome_Utente,
         Cognome_Utente,
         Ruolo
-    FROM Utente 
-    WHERE Username = p_Username;
+    FROM Utente
+    WHERE BINARY Username = BINARY p_Username;
 END$$
 
 DELIMITER ;
