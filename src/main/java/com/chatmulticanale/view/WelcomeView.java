@@ -71,7 +71,7 @@ public class WelcomeView implements View {
                 if (e.getNavigazione().azione == Navigazione.Azione.LOGOUT) {
                     return e.getNavigazione();
                 }
-                ViewUtils.println(ColorUtils.ANSI_RED + "Errore: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
+                ViewUtils.println(ColorUtils.ANSI_RED + "ERRORE: Inserisci un numero valido." + ColorUtils.ANSI_RESET);
                 InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_RIPROVARE);
                 continue;
             }

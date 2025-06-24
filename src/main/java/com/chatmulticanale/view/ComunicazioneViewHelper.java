@@ -105,12 +105,12 @@ public class ComunicazioneViewHelper {
 
         List<ChatPrivataDTO> mieChat = interazioneController.getMieChatPrivate(idUtenteLoggato);
         if (mieChat.isEmpty()) {
-            ViewUtils.println(CostantiView.NO_CHAT_ATTIVE);
+            ViewUtils.println(CostantiView.VISUALIZZA_CHAT_NO_CHAT);
             InputUtils.pressEnterToContinue(CostantiView.INVIO_PER_INDIETRO);
             return;
         }
 
-        ViewUtils.println(CostantiView.ELENCO_CHAT_PRIVATE);
+        ViewUtils.println(CostantiView.VISUALIZZA_CHAT_ELENCO_CHAT);
         String header = String.format("%-5s | %-20s | %s", "ID", "Avviata il", "Conversazione con");
         ViewUtils.println(ColorUtils.ANSI_BOLD + header + ColorUtils.ANSI_RESET);
         mieChat.forEach(chat -> {

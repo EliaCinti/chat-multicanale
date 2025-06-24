@@ -14,7 +14,7 @@ public class CostantiView {
         public static final String NO_ALTRE_PAGINE = "Non ci sono altre pagine.";
         public static final String PRIMA_PAGINA = "Sei già alla prima pagina.";
         public static final String SELEZIONA_PROGETTO = "Seleziona il progetto di cui vuoi modificare un canale:";
-        public static final String NO_CANALI = "\nAttenzione: Questo progetto non ha canali.";
+        public static final String NO_CANALI = "\nATTENZIONE: Questo progetto non ha canali.";
         public static final String ID_DIPENDENTE = "ID Dipendente: ";
         public static final String WELCOME = "Benvenuto/a, ";
 
@@ -53,9 +53,7 @@ public class CostantiView {
     public static final String NO_MESSAGGI_DA_CUI_PARTIRE = "ATTENZIONE: Non ci sono messaggi in questa pagina da cui partire.";
     public static final String CHAT_AVVIATA = "\nChat privata avviata con successo!";
     public static final String ERRORE_AVVIO_CHAT = "\nERRORE: Impossibile avviare la chat.";
-    public static final String NO_CHAT_ATTIVE = "Non hai nessuna chat privata attiva.";
     public static final String ID_NON_VALIDO_IN_PAGINA_CORRENTE = "ID non valido. Seleziona un ID dalla pagina corrente.";
-    public static final String ELENCO_CHAT_PRIVATE = "Elenco delle tue conversazioni private:";
 
     // --- COSTANTI LOGIN ---
     public static final String LOGIN = "--- LOGIN ---";
@@ -162,7 +160,7 @@ public class CostantiView {
         // --- costanti aggiungi utente ---
         public static final String AGGIUNGI_DIPENDENTE_A_CANALE = "--- AGGIUNGI DIPENDENTE A CANALE ---";
         public static final String AGGIUNGI_DIPENDENTE_SELEZIONE_CANALE = "Seleziona il canale a cui aggiungere un dipendente (o usa /b per scegliere un altro progetto):";
-        public static final String AGGIUNGI_DIPENDENTE_NO_ALTRI_DIPENDENTI = "\nAttenzione: Non ci sono altri dipendenti da poter aggiungere a questo canale.";
+        public static final String AGGIUNGI_DIPENDENTE_NO_ALTRI_DIPENDENTI = "\nATTENZIONE: Non ci sono altri dipendenti da poter aggiungere a questo canale.";
         public static final String AGGIUNGI_DIPENDENTE_SELEZIONA_DIPENDENTE = "\nSeleziona il dipendente da aggiungere al canale:";
         public static final String AGGIUNGI_DIPENDENTE_SUCCESSO = "\nDipendente aggiunto al canale con successo!";
         public static final String AGGIUNGI_DIPENDENTE_ERRORE = "\nERRORE: Impossibile aggiungere il dipendente.";
